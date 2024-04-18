@@ -7,7 +7,7 @@ class RiskyMutationGeneration:
         self.mutation_already_generated = []
         self.queue_mutation = queue_mutation
 
-    def process_state_queue(self):
+    def process_basic_block_trace_queue(self):
         self.logger.info("spawn_run_puppet : processing started")
         while True:
             state = self.queue_basic_block_trace.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image

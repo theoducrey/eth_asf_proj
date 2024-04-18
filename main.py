@@ -3,7 +3,11 @@ import argparse
 import logging
 from threading import Thread, Lock
 
-from 1_spawn_run_puppet import SpawnRunPuppet
+from risky_mutation_generation_3 import RiskyMutationGeneration
+from spawn_run_puppet_1 import SpawnRunPuppet
+from state_checker_4 import StateChecker
+from trace_analyzer_5 import TraceAnalyzer
+from trace_handling_2 import TraceHandling
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 def setup_logger(name, log_file, level=logging.INFO):
@@ -28,18 +32,6 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     return logger
 
-
-
-
-
-
-
-
-class init:
-    def __init__(self, logger, db_clients_lock, manifest_fi):
-        self.logger = logger
-
-
 def main():
     logger = setup_logger("db-module", "./logs/db-module.logs")
     parser = argparse.ArgumentParser(
@@ -49,7 +41,12 @@ def main():
     parser.add_argument('-m', '--manifest_file', help='The exact path from the root of the project to the puppet manifest')
     args = parser.parse_args()
     main_lock = Lock()
-    
+
+
+
+
+
+
     #input -> output
     spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, puppet_manifest, args)   #   1:   queue_mutation -> queue_trace, queue_state
     traceHandling = TraceHandling(logger, logger, queue_trace, queue_basic_block_trace, main_lock, args)     #   2:   queue_trace -> queue_basic_block_trace
@@ -60,18 +57,20 @@ def main():
 
 
     spawnRunPuppet_thread = Thread(target=spawnRunPuppet.process_mutation_queue(), args=())
-    _thread = Thread(target=spawnRunPuppet, args=())
-    producer.start()
-    producer.start()
-    producer.start()
-    producer.start()
-    producer.start()
-    producer.start()
-    producer.join()
-    producer.join()
-    producer.join()
-    producer.join()
-    producer.join()
+    traceHandling_thread = Thread(target=traceHandling.process_mutation_queue(), args=())
+    riskyMutationGeneration_thread = Thread(target=riskyMutationGeneration.process_basic_block_trace_queue(), args=())
+    stateChecker_thread = Thread(target=stateChecker.process_state_queue(), args=())
+    traceAnalyzer_thread = Thread(target=traceAnalyzer.process_basic_block_trace_queue(), args=())
+    spawnRunPuppet_thread.start()
+    traceHandling_thread.start()
+    riskyMutationGeneration_thread.start()
+    stateChecker_thread.start()
+    traceAnalyzer_thread.start()
+    spawnRunPuppet_thread.join()
+    traceHandling_thread.join()
+    riskyMutationGeneration_thread.join()
+    stateChecker_thread.join()
+    traceAnalyzer_thread.join()
 
 
 if __name__ == '__main__':
