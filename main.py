@@ -3,7 +3,7 @@ import argparse
 import logging
 from threading import Thread, Lock
 
-from spawn_run_puppet import Spawn_run_puppet
+from 1_spawn_run_puppet import SpawnRunPuppet
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 def setup_logger(name, log_file, level=logging.INFO):
@@ -50,13 +50,17 @@ def main():
     args = parser.parse_args()
     main_lock = Lock()
     
+    #input -> output
+    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, puppet_manifest, args)   #   1:   queue_mutation -> queue_trace, queue_state
+    traceHandling = TraceHandling(logger, logger, queue_trace, queue_basic_block_trace, main_lock, args)     #   2:   queue_trace -> queue_basic_block_trace
+    riskyMutationGeneration = RiskyMutationGeneration(logger, queue_basic_block_trace, queue_mutation, main_lock, args)#   3:   queue_basic_block_trace -> queue_mutation
+    stateChecker = StateChecker(logger, queue_state, main_lock, puppet_manifest, args)
+    traceAnalyzer = TraceAnalyzer(logger, queue_basic_block_trace, main_lock, manifest_graph, args)
 
 
-    spawn_run_puppet = Spawn_run_puppet(logger, main_lock, puppet_manifest, args)
 
-
-
-    spawn_run_puppet_thread = Thread(target=spawn_run_puppet., args=(comm_info, queue_network, logger,))
+    spawnRunPuppet_thread = Thread(target=spawnRunPuppet.process_mutation_queue(), args=())
+    _thread = Thread(target=spawnRunPuppet, args=())
     producer.start()
     producer.start()
     producer.start()

@@ -1,4 +1,4 @@
-class State_checker:
+class StateChecker:
     def __init__(self, logger, queue_state, main_lock, puppet_manifest, args):
         self.main_lock = main_lock
         self.logger = logger
