@@ -1,0 +1,15 @@
+language: c
+sudo: required
+env:
+    - OCAML_VERSION=4.05.0
+cache:
+    directories:
+        - ${HOME}/.opam
+before_install:
+    - sudo apt update
+    - sudo apt install opam m4 -y
+    - opam init --compiler ${OCAML_VERSION} -y
+    - eval `opam config env`
+install:
+    - opam install -y ppx_jane core yojson dune ounit fd-send-recv fpath
+script: dune runtest

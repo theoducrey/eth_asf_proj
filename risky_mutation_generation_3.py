@@ -20,4 +20,10 @@ class RiskyMutationGeneration:
         self.mutation_already_generated.append(new_mutation)
         # TODO filter out mutation already done
         self.queue_mutation.put(new_mutation)
+
+
+
+
+        #types
+        # ????? check for missing Notifiers -> does it change the state
         pass
