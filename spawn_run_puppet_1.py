@@ -76,7 +76,7 @@ class SpawnRunPuppet:
         return state
 
     def get_trace(self):
-        # TODO needs to be done with strace
+        # TODO needs to be done with strace or use the analyze-traces.sh from the github connected to this one
         with open("manifest_output.txt", "r") as file:
             trace = file.read()
         return trace
