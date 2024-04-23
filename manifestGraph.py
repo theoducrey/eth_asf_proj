@@ -28,15 +28,15 @@ class ManifestGraph:
                          id_corresp_resource = self.nodes_ressources[res_rel['title']][0]
                          self.vertices_relation[res_id, id_corresp_resource] = "B"
                 if "require" in res['parameter']: #add the inverse edge  (before)
-                     for res_rel in res['parameter']['before']:
+                     for res_rel in res['parameter']['require']:
                          id_corresp_resource = self.nodes_ressources[res_rel['title']][0]
                          self.vertices_relation[id_corresp_resource, res_id] = "B"
                 if "notify" in res['parameter']: #create notify edge (notify
-                     for res_rel in res['parameter']['before']:
+                     for res_rel in res['parameter']['notify']:
                          id_corresp_resource = self.nodes_ressources[res_rel['title']][0]
                          self.vertices_relation[res_id, id_corresp_resource] = "N"
                 if "subscribe" in res['parameter']: #add the inverse edge (notify)
-                     for res_rel in res['parameter']['before']:
+                     for res_rel in res['parameter']['subscribe']:
                          id_corresp_resource = self.nodes_ressources[res_rel['title']][0]
                          self.vertices_relation[id_corresp_resource, res_id] = "N"
 
