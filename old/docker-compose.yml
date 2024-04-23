@@ -1,0 +1,101 @@
+version: '3.3'
+services:
+    puppetserver:
+        hostname: puppetserver
+        container_name: puppetserver
+        image: puppet/puppetserver
+        ports:
+            - "8140:8140"
+        volumes:
+            - './puppetserver/code:/etc/puppetlabs/code/'
+            - './puppetserver/puppet:/etc/puppetlabs/puppet/'
+            - './puppetserver/puppet/ssl/ca:/etc/puppetlabs/puppetserver/ca'
+            - './puppetserver/serverdata:/opt/puppetlabs/server/data/puppetserver/'
+        healthcheck:
+            test: curl --fail -k https://localhost:8140/status/v1/simple || exit 1
+            interval: 30s
+            timeout: 15s
+            retries: 6
+        environment:
+            - PUPPETSERVER_HOSTNAME=puppetserver
+            - PUPPET_MASTERPORT=8140
+            - DNS_ALT_NAMES=puppetserver
+            - USE_PUPPETDB=true
+            - PUPPETDB_SERVER_URLS=https://puppetdb:8081
+
+    postgres:
+        hostname: postgres
+        container_name: postgres
+        image: postgres:11-alpine
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_PASSWORD=yoursecurepostgrespassword
+            - POSTGRES_USER=yourpuppetdbuser
+            - POSTGRES_DB=yourpuppetdbname
+        healthcheck:
+            test: pg_isready || exit 1
+            interval: 30s
+            timeout: 15s
+            retries: 6
+
+    puppetdb:
+        hostname: puppetdb
+        container_name: puppetdb
+        image: davidphay/puppetdb:7.12.1
+        depends_on:
+            puppetserver:
+                condition: service_healthy
+            postgres:
+                condition: service_healthy
+        volumes:
+            - ./puppetdb_data:/opt/puppetlabs/server/data/puppetdb
+        healthcheck:
+            test: curl --fail http://localhost:8080/status/v1/services/puppetdb-status || exit 1
+            interval: 30s
+            timeout: 15s
+            retries: 6
+        ports:
+            - 8080:8080
+        environment:
+            - PUPPETDB_PASSWORD=yoursecurepostgrespassword
+            - PUPPETDB_USER=yourpuppetdbuser
+            - PUPPETDB_POSTGRES_DATABASE=yourpuppetdbname
+            - PUPPETDB_POSTGRES_HOSTNAME=postgres
+            - PUPPETDB_POSTGRES_PORT=5432
+            - PUPPETSERVER_PORT=8140
+            - PUPPETSERVER_HOSTNAME=puppetserver
+            - USE_PUPPETSERVER=true
+
+    puppetboard:
+        hostname: puppetboard
+        container_name: puppetboard
+        image: ghcr.io/voxpupuli/puppetboard:latest
+        links:
+            - puppetdb
+        ports:
+            - "80:80"
+        depends_on:
+            puppetdb:
+              condition: service_healthy
+        environment:
+            - PUPPETDB_HOST=puppetdb
+            - PUPPETDB_PORT=8080
+            - PUPPETBOARD_PORT=80
+            - SECRET_KEY=yourverylongssecretkeystring
+        healthcheck:
+            test: wget http://127.0.0.1:80/status -O - || exit 1
+            interval: 30s
+            timeout: 15s
+            retries: 6
+
+
+    agent:
+      image: puppet/puppet-agent
+      container_name: puppet_agent
+      volumes:
+        - '/path/to/puppet_conf:/etc/puppetlabs/puppet/'
+      depends_on:
+        - puppetserver
+      environment:
+        - PUPPET_MASTER_SERVER=puppetserver

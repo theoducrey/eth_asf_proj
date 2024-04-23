@@ -1,0 +1,6 @@
+the input device is not a TTY
+Using default tag: latest
+latest: Pulling from puppet/puppet-agent
+Digest: sha256:9223a40ef490ae331b41ff36edaaba3470caf02e984b4bf107c4184b99a32f0a
+Status: Image is up to date for puppet/puppet-agent:latest
+docker.io/puppet/puppet-agent:latest

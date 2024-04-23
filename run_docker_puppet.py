@@ -1,5 +1,31 @@
 import os
-    import subprocess
+import subprocess
+from sys import stdout
+
+
+#new version
+#Terminal 1  (in docker_testbench directory)
+#docker-compose up
+#Terminal 2
+#docker exec -it puppetserver /bin/bash
+#puppet apply /etc/puppetlabs/code/puppetlabs-apache-12.1.0/manifests/
+#or
+#puppet apply /etc/puppetlabs/code/examples/
+#or
+#...
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class SpawnRunPuppet:
@@ -28,23 +54,36 @@ class SpawnRunPuppet:
         pass
 
     def extract_trace_and_catalog(self):
+        pass
+
+def run_puppet_manifest(manifest_path, tmp_output_path, id):
+    manifest_path = os.path.abspath(manifest_path)
+    tmp_output_path = os.path.abspath(tmp_output_path)
+    tmp_output_path = tmp_output_path + "/" + str(id)
+    with open("output/output.log", "a") as output:
+        subprocess.call("docker pull puppet/puppet-agent", shell=True, stdout=stdout, stderr=stdout)
+        subprocess.call(command, shell=True, stdout=stdout, stderr=stdout)
+        command_agent = "docker run -i --name puppet-agent-container \
+                    -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
+                    -v "+tmp_output_path+(":/output \
+                    puppet/puppet-agent")
+
+        command_server = "docker run --net puppet --name puppet-container \
+                    -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
+                    -v "+tmp_output_path+":/output \
+
+                    puppet/puppetserver"
+        #command = "docker run -it --name puppet-container \
+        #            -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
+        #            puppet/puppet-agent"
+        command3_in = "strace -o /output/strace_output.txt puppet apply /etc/puppetlabs/code/environments/production/manifests"
+        command3 = "docker exec - it puppet-agent-container sh - c \""+command3_in+"\""
+        command3_in = "docker cp puppet-agent-container:/opt/puppetlabs/puppet/cache/state/last_run_report.yaml /output"
+        command3 = "docker rm puppet-agent-container"
+        subprocess.call(command, shell=True, stdout=stdout, stderr=stdout)
 
 
-    def run_puppet_manifest(self, manifest_path, tmp_output_path, id):
-        tmp_output_path = tmp_output_path + "/" + id
-        with open("/tmp/output.log", "a") as output:
-            command = "docker run -it --name puppet-container \
-                        -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
-                        -v "+tmp_output_path+":/output \
-                        puppet/puppet-agent"
-            #command = "docker run -it --name puppet-container \
-            #            -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
-            #            puppet/puppet-agent"
-            command3_in = "strace -o /output/strace_output.txt puppet apply /etc/puppetlabs/code/environments/production/manifests"
-            command3_in = "docker cp puppet-container:/opt/puppetlabs/puppet/cache/state/last_run_report.yaml /output"
-            command3 = "docker rm puppet-container"
-            subprocess.call(command, shell=True, stdout=output, stderr=output)
 
 
-def spawning_thread()
-docker pull puppet/puppet-agent
+if __name__ == '__main__':
+    run_puppet_manifest("manifests", "output",1)
