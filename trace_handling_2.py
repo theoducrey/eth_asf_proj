@@ -19,6 +19,7 @@ class TraceHandling:
     def process_mutation(self, trace):
         basic_block_trace = None
         self.queue_basic_block_trace.put(basic_block_trace)
+        ("")
 
 
 

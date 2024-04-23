@@ -4,6 +4,7 @@ import logging
 from multiprocessing import Queue
 from threading import Thread, Lock
 
+from manifestGraph import ManifestGraph
 from risky_mutation_generation_3 import RiskyMutationGeneration
 from spawn_run_puppet_1 import SpawnRunPuppet
 from state_checker_4 import StateChecker
@@ -39,17 +40,22 @@ def main():
         prog='eth_asf_proj',
         description='What the program does',
         epilog='Text at the bottom of help')
-    parser.add_argument('-m', '--manifest_file', help='The exact path from the root of the project to the puppet manifest')
+    parser.add_argument('-m', '--puppet_manifest', help='The exact path from the root of the project to the puppet manifest')
     args = parser.parse_args()
     main_lock = Lock()
 
+    queue_mutation = Queue()   #elem (idx, elem)
+    queue_trace = Queue()
+    queue_state = Queue()
+    queue_basic_block_trace = Queue()
+    queue_mutation = Queue()
     queue_mutation = Queue()
 
-
+    manifest_graph = ManifestGraph(args.puppet_manifest)
 
     #input -> output
-    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, puppet_manifest, args)   #   1:   queue_mutation -> queue_trace, queue_state
-    traceHandling = TraceHandling(logger, logger, queue_trace, queue_basic_block_trace, main_lock, args)     #   2:   queue_trace -> queue_basic_block_trace
+    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, args.puppet_manifest, args)   #   1:   queue_mutation -> queue_trace, queue_state
+    traceHandling = TraceHandling(logger, queue_trace, queue_basic_block_trace, main_lock, args)   #   2:   queue_trace -> queue_basic_block_trace
     riskyMutationGeneration = RiskyMutationGeneration(logger, queue_basic_block_trace, queue_mutation, main_lock, args)#   3:   queue_basic_block_trace -> queue_mutation
     stateChecker = StateChecker(logger, queue_state, main_lock, manifest_graph, args)  #4:     queue_state, manifest_graph -> log
     traceAnalyzer = TraceAnalyzer(logger, queue_basic_block_trace, main_lock, manifest_graph, args)  #5:     queue_basic_block_trace, manifest_graph  -> log
