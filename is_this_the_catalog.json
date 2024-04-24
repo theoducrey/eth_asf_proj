@@ -1,0 +1,61 @@
+[mNotice: Compiled catalog for 38f578404ae6 in environment production in 0.01 seconds[0m
+{
+  "tags": [
+    "settings"
+  ],
+  "name": "38f578404ae6",
+  "version": 1713986754,
+  "code_id": null,
+  "catalog_uuid": "d902e6ef-ff87-42ab-a543-43574dc71733",
+  "catalog_format": 2,
+  "environment": "production",
+  "resources": [
+    {
+      "type": "Stage",
+      "title": "main",
+      "tags": [
+        "stage"
+      ],
+      "exported": false,
+      "kind": "compilable_type",
+      "parameters": {
+        "name": "main"
+      }
+    },
+    {
+      "type": "Class",
+      "title": "Settings",
+      "tags": [
+        "class",
+        "settings"
+      ],
+      "exported": false,
+      "kind": "unknown"
+    },
+    {
+      "type": "Class",
+      "title": "main",
+      "tags": [
+        "class"
+      ],
+      "exported": false,
+      "kind": "unknown",
+      "parameters": {
+        "name": "main"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "Stage[main]",
+      "target": "Class[Settings]"
+    },
+    {
+      "source": "Stage[main]",
+      "target": "Class[main]"
+    }
+  ],
+  "classes": [
+    "settings"
+  ]
+}
