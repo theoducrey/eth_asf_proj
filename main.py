@@ -6,7 +6,7 @@ from threading import Thread, Lock
 
 from manifestGraph import ManifestGraph
 from risky_mutation_generation_3 import RiskyMutationGeneration
-from spawn_run_puppet_1 import SpawnRunPuppet
+from run_docker_puppet import SpawnRunPuppet
 from state_checker_4 import StateChecker
 from trace_analyzer_5 import TraceAnalyzer
 from trace_handling_2 import TraceHandling
@@ -35,7 +35,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     return logger
 
 def main():
-    logger = setup_logger("db-module", "./logs/db-module.logs")
+    logger = setup_logger("db-module", "output/main.logs")
     parser = argparse.ArgumentParser(
         prog='eth_asf_proj',
         description='What the program does',
@@ -51,14 +51,20 @@ def main():
     queue_mutation = Queue()
     queue_mutation = Queue()
 
-    manifest_graph = ManifestGraph(args.puppet_manifest)
+
+    target_manifest = "java"
 
     #input -> output
-    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, args.puppet_manifest, args)   #   1:   queue_mutation -> queue_trace, queue_state
+    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, main_lock, target_manifest)   #   1:   queue_mutation -> queue_trace
+    target_catalog = spawnRunPuppet.get_target_catalog()
+    target_manifest_graph = ManifestGraph(target_catalog)
+
     traceHandling = TraceHandling(logger, queue_trace, queue_basic_block_trace, main_lock, args)   #   2:   queue_trace -> queue_basic_block_trace
     riskyMutationGeneration = RiskyMutationGeneration(logger, queue_basic_block_trace, queue_mutation, main_lock, args)#   3:   queue_basic_block_trace -> queue_mutation
     stateChecker = StateChecker(logger, queue_state, main_lock, manifest_graph, args)  #4:     queue_state, manifest_graph -> log
     traceAnalyzer = TraceAnalyzer(logger, queue_basic_block_trace, main_lock, manifest_graph, args)  #5:     queue_basic_block_trace, manifest_graph  -> log
+
+
 
 
 

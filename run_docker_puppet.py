@@ -80,12 +80,14 @@ class SpawnRunPuppet:
             subprocess.call("docker pull puppet/puppetserver", shell=True, stdout=output, stderr=output)
 
 
-    def get_catalog(self):
-        self.run_puppet_manifest_from_name(self, [], self.current_id)
-        search_dir = self.output_dir + str(self.current_id)
-        catalog_json = json.load(open(search_dir+"puppet_catalog.json"))
+    def get_target_catalog(self):
+        self.run_puppet_manifest_from_name([], self.current_id)
+        search_dir = self.output_dir + str(self.current_id)+"/"
+        with open(search_dir+"puppet_catalog.json") as json_file:
+            json_file.readline()
+            catalog_json = json.load(json_file)
         self.current_id += 1
-        return catalog_json
+        return (self.target_manifest, catalog_json)
 
     def process_mutation_queue(self):
         self.logger.info("spawn_run_puppet : processing started")
@@ -115,13 +117,16 @@ class SpawnRunPuppet:
                     raise NotImplemented
 
 
-        self.run_puppet_manifest_from_name(self, mutations_commands, self.current_id)
+        self.run_puppet_manifest_from_name(mutations_commands, self.current_id)
+        local_output_dir = self.output_dir + str(self.current_id)
+        self.queue_trace.put((self.current_id, local_output_dir, self.target_manifest))
         self.current_id += 1
 
 
     def run_puppet_manifest_from_name(self, mutations_commands, processing_id):
-        local_output_dir = self.output_dir + str(processing_id)
-        with open(local_output_dir + "/terminal.log", "a") as output:
+        local_output_dir = self.output_dir + str(processing_id) + "/"
+        os.makedirs(os.path.join(os.getcwd(), local_output_dir))
+        with open(local_output_dir + "terminal.log", "a") as output:
             commands = []
             commands.append("docker-compose up -d")
             command_docker_shell = "docker exec -i puppetserver "
