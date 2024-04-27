@@ -1,0 +1,3 @@
+{
+  "java" : {"name": "java", "manifest_content":  "include java", "module_name":  "puppetlabs-java", "version": "11.0.0"}
+}

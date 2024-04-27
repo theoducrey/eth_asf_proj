@@ -1,89 +1,155 @@
+import json
 import os
 import subprocess
+from datetime import datetime
 from sys import stdout
 
-
-#new version
-#Terminal 1  (in docker_testbench directory)
-#docker-compose up
-#Terminal 2
-#docker exec -it puppetserver /bin/bash
-#puppet apply /etc/puppetlabs/code/puppetlabs-apache-12.1.0/manifests/
-#or
-#puppet apply /etc/puppetlabs/code/examples/
-#or
-#...
-
-
-
-
-
-
-
-
-
-
-
-
-
+syscall_filter = [
+    "access",
+    "chdir",
+    "chmod",
+    "chown",
+    "clone",
+    "close",
+    "dup",
+    "dup2",
+    "dup3",
+    "execve",
+    "fchdir",
+    "fchmodat",
+    "fchownat",
+    "fcntl",
+    "fork",
+    "getxattr",
+    "getcwd",
+    "lchown",
+    "lgetxattr",
+    "lremovexattr",
+    "lsetxattr",
+    "lstat",
+    "link",
+    "linkat",
+    "mkdir",
+    "mkdirat",
+    "mknod",
+    "open",
+    "openat",
+    "readlink",
+    "readlinkat",
+    "removexattr",
+    "rename",
+    "renameat",
+    "rmdir",
+    "statfs",
+    "symlink",
+    "symlinkat",
+    "unlink",
+    "unlinkat",
+    "utime",
+    "utimensat",
+    "utimes",
+    "vfork",
+    "write",
+    "writev",
+]
 
 
 class SpawnRunPuppet:
-    def __init__(self, logger, queue_mutation, queue_trace, queue_state, main_lock, puppet_manifest, args):
+    def __init__(self, logger, queue_mutation, queue_trace, main_lock, target_manifest):
         self.main_lock = main_lock
         self.logger = logger
-        self.puppet_manifest = puppet_manifest
-        self.args = args
+        self.target_manifest = target_manifest
         self.queue_mutation = queue_mutation
-        self.queue_trace = queue_trace
-        self.queue_state = queue_state
+        self.queue_trace = queue_trace  #contain id of trace
+        self.next_id = len(os.listdir("output")) + 1
+        self.existing_ids = set()
+        self.output_dir = "output/"+target_manifest+"_" + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + "/"
+        os.makedirs(os.path.join(os.getcwd(), self.output_dir))
+        self.current_id = 0
+        self.init_image()
 
-
+        manifs_f = open('availible_manifest_param.json')
+        data = json.load(manifs_f)
+        self.manifest_content = data[target_manifest]["manifest_content"]
+        self.module_name = data[target_manifest]["module_name"]
+        self.module_version = data[target_manifest]["version"]
 
     def init_image(self):
-        with open("/tmp/output.log", "a") as output:
-            subprocess.call("docker pull puppet/puppet-agent", shell=True, stdout=output, stderr=output)
+        #self.logger.info("Pulling puppetserver image")
+        with open("output/SpawnRunPuppet.log", "a") as output:
+            subprocess.call("docker pull puppet/puppetserver", shell=True, stdout=output, stderr=output)
+
+
+    def get_catalog(self):
+        self.run_puppet_manifest_from_name(self, [], self.current_id)
+        search_dir = self.output_dir + str(self.current_id)
+        catalog_json = json.load(open(search_dir+"puppet_catalog.json"))
+        self.current_id += 1
+        return catalog_json
 
     def process_mutation_queue(self):
         self.logger.info("spawn_run_puppet : processing started")
         while True:
-            mutation = self.queue_mutation.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
-            self.process_mutation(mutation)
+            mutations = self.queue_mutation.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
+            self.process_mutation(mutations)
 
-    def process_mutation(self, mutation: list):
-        pass
+    def process_mutation(self, mutations: list):
+        #eg: ("rename", "path_file", "new_name")
+        #eg: ("edit_append", "path_file", "new_content")
+        #eg: ("edit_prepend", "path_file", "new_content")
+        #eg: ("replace", "path_file", "new_content")
+        #eg: ("delete", "path_file or dir", "new_name")
+        #eg: ("create_file", "path_dir", "new_name")
+        #eg: ("create_dir", "path_dir", "new_name")
+        #eg: ("rename", "path_file", "new_name")
 
-    def extract_trace_and_catalog(self):
-        pass
+        mutations_commands = []
+        for mut in mutations:
+            match mut[0]:
+                case "rename":
+                    mutations_commands.append("mv "+mut[1]+" "+mut[1].split("/")[:-1]+mut[2])
+                    raise NotImplemented
+                case "edit_append":
+                    raise NotImplemented
+                case _:
+                    raise NotImplemented
 
-def run_puppet_manifest(manifest_path, tmp_output_path, id):
-    manifest_path = os.path.abspath(manifest_path)
-    tmp_output_path = os.path.abspath(tmp_output_path)
-    tmp_output_path = tmp_output_path + "/" + str(id)
-    with open("output/output.log", "a") as output:
-        subprocess.call("docker pull puppet/puppet-agent", shell=True, stdout=stdout, stderr=stdout)
-        subprocess.call(command, shell=True, stdout=stdout, stderr=stdout)
-        command_agent = "docker run -i --name puppet-agent-container \
-                    -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
-                    -v "+tmp_output_path+(":/output \
-                    puppet/puppet-agent")
 
-        command_server = "docker run --net puppet --name puppet-container \
-                    -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
-                    -v "+tmp_output_path+":/output \
+        self.run_puppet_manifest_from_name(self, mutations_commands, self.current_id)
+        self.current_id += 1
 
-                    puppet/puppetserver"
-        #command = "docker run -it --name puppet-container \
-        #            -v "+manifest_path+":/etc/puppetlabs/code/environments/production/manifests \
-        #            puppet/puppet-agent"
-        command3_in = "strace -o /output/strace_output.txt puppet apply /etc/puppetlabs/code/environments/production/manifests"
-        command3 = "docker exec - it puppet-agent-container sh - c \""+command3_in+"\""
-        command3_in = "docker cp puppet-agent-container:/opt/puppetlabs/puppet/cache/state/last_run_report.yaml /output"
-        command3 = "docker rm puppet-agent-container"
-        subprocess.call(command, shell=True, stdout=stdout, stderr=stdout)
+
+    def run_puppet_manifest_from_name(self, mutations_commands, processing_id):
+        local_output_dir = self.output_dir + str(processing_id)
+        with open(local_output_dir + "/terminal.log", "a") as output:
+            commands = []
+            commands.append("docker-compose up -d")
+            command_docker_shell = "docker exec -i puppetserver "
+            commands.append(command_docker_shell + "mkdir "+local_output_dir)
+            commands.append(command_docker_shell + "bash -c  \"echo " + self.manifest_content + " > /etc/puppetlabs/code/environments/production/manifests/init.pp\"")  #echo "include 'docker'" / etc / puppetlabs / code / environments / production / manifests / init.pp
+            commands.append(command_docker_shell + "puppet module install " + self.module_name +" --version="+self.module_version)
+            commands += [command_docker_shell + "bash -c \"" + mut + "\"" for mut in mutations_commands]
+            commands.append((command_docker_shell +
+                         "strace"
+                         " -s 300"
+                         " -o /"+local_output_dir + "/strace_output.txt" +
+                         " -e " + ','.join(syscall_filter) +  #-e trace=open,openat,close,read,write,connect,accept
+                         " -f " +  # -f = follow forked childs -y display file name
+                         (
+                                 " puppet apply " +
+                                 "/etc/puppetlabs/code/environments/production/manifests/init.pp" +
+                                 " --debug --evaltrace"
+                         )))  #puppet apply /etc/puppetlabs/code/environments/production/manifests/init.pp --debug --evaltrace
+            commands.append(command_docker_shell + "bash -c \"puppet catalog find > /"+local_output_dir + "/puppet_catalog.json\"")
+            commands.append("docker-compose down")
+
+            for command in commands:
+                subprocess.call(command, shell=True, stdout=output, stderr=output)
 
 
 
 
 if __name__ == '__main__':
-    run_puppet_manifest("manifests", "output",1)
+    spawn = SpawnRunPuppet(None, None, None, None, None)
+    spawn.run_puppet_manifest_from_name("include java", "puppetlabs-java --version 11.0.0", 9)
+    #spawn.run_puppet_manifest("albatrossflavour-os_patching/init.pp", "albatrossflavour-os_patching-0.21.0", "output",8)

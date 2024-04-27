@@ -1,4 +1,0 @@
-# mod_ext_filter definitions
-<%- Array($ext_filter_define).sort.each |$name_and_value| { -%>
-ExtFilterDefine <%= $name_and_value[0] %> <%= $name_and_value[1] %>
-<%- } -%>

@@ -1,0 +1,26 @@
+#version: '3.3'
+services:
+    puppetserver:
+        hostname: puppetserver
+        container_name: puppetserver
+        image: puppet/puppetserver
+        ports:
+            - "8140:8140"
+        volumes:
+            #- './puppetserver/code:/etc/puppetlabs/code/'
+            #- './puppetserver/puppet:/etc/puppetlabs/puppet/'
+            #- './puppetserver/puppet/ssl/ca:/etc/puppetlabs/puppetserver/ca'
+            #- './puppetserver/serverdata:/opt/puppetlabs/server/data/puppetserver/'
+            - '../manifests:/etc/puppetlabs/manifests'
+        healthcheck:
+            test: curl --fail -k https://localhost:8140/status/v1/simple || exit 1
+            interval: 30s
+            timeout: 15s
+            retries: 6
+        environment:
+            - PUPPETSERVER_HOSTNAME=puppetserver
+            - PUPPET_MASTERPORT=8140
+            - DNS_ALT_NAMES=puppetserver
+            - USE_PUPPETDB=true
+            - PUPPETDB_SERVER_URLS=https://puppetdb:8081
+

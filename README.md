@@ -12,3 +12,21 @@ Might help with generating docker compose file:
 https://gist.github.com/shatil/0d08d889bde981a899e9ddab189909e6
 
 
+
+/etc/puppetlabs/puppetserver/logback.xml
+<root level="info"> to <root level="trace">
+trace, debug, info, warn and error
+/var/log/puppetlabs/puppetserver/puppetserver.log
+
+
+
+
+
+
+
+
+
+
+
+
+Puppet version 7.3

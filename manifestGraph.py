@@ -43,13 +43,11 @@ class ManifestGraph:
 
             return graph
 
-        self.ressources = []
-
     def set_manifest_file(self, manifest_file):
         self.manifest_file = manifest_file
         self.generate_from_manifest()
 
-    def add_mutation(self, mutation):
+    #def add_mutation(self, mutation):
 
 
 

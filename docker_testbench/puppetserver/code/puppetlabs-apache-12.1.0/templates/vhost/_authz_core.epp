@@ -1,3 +1,0 @@
-<% $authz_core_config.each |$line| { -%>
-    <%= $line %>
-<%- } -%>

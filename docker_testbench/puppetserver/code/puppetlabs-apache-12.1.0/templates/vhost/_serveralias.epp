@@ -1,8 +1,0 @@
-<%- | Array[String] $serveraliases | -%>
-<% unless $serveraliases.empty { -%>
-
-  ## Server aliases
-  <%- $serveraliases.each |$serveralias| { -%>
-  ServerAlias <%= $serveralias %>
-  <%- } -%>
-<% } -%>

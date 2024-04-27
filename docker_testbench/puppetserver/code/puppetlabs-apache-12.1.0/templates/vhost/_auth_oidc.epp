@@ -1,5 +1,0 @@
-<% if $auth_oidc { -%>
-<% $oidc_settings.map |Any $key, Any $value| { %>
-  OIDC<%= $key %> <% if $key == 'Scope' { -%>"<%= $value -%>"<% } else { -%><%= $value -%><% }-%>
-<% } %>
-<% } -%>
