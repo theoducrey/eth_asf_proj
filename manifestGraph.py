@@ -3,13 +3,14 @@ import numpy as np
 
 class ManifestGraph:
     def __init__(self, catalog_json):
-        self.nodes_ressources = {} #type[title]: (id, title, type)
+        self.nodes_resources = {} #type[title]: (id, title, type)
         self.nbr_nodes = len(self.nodes_ressources)
         # None = no edge, "B" = before, "N" = notify, "R" = require
         self.vertices_relation = np.full((0,0), None, dtype=str, like=None)
         self.set_catalog_file(catalog_json)
 
-
+    def edge_res1_res2(self, res1_title, res2_title):
+        return self.vertices_relation[self.nodes_resources[res1_title][0], self.nodes_resources[res1_title][1]]
     def generate_from_manifest(self):
         ressources_raw = self.catalog_json['resources'] #TODO we may want to consider an empty graph (no ressources) which can be expanded manually
         self.nbr_nodes = len(ressources_raw)

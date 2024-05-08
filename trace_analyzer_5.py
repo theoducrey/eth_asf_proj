@@ -7,6 +7,10 @@ class TraceAnalyzer:
         self.args = args
         self.queue_basic_block_trace = queue_basic_block_trace
 
+
+
+
+
     def process_basic_block_trace_queue(self):
         self.logger.info("TraceAnalyzer : processing started")
         while True:
@@ -14,6 +18,6 @@ class TraceAnalyzer:
             self.process_block_trace(block_trace)
 
     def process_block_trace(self, state):
-
+        self.manifest_graph.ver
         #Directy log the result using the result logger
         pass
