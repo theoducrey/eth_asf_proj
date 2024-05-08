@@ -58,7 +58,7 @@ def main():
     spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, main_lock, target_manifest)   #   1:   queue_mutation -> queue_trace
     target_catalog = spawnRunPuppet.get_target_catalog()
     target_manifest_graph = ManifestGraph(target_catalog)
-
+    exit(0)
     traceHandling = TraceHandling(logger, queue_trace, queue_basic_block_trace, main_lock, args)   #   2:   queue_trace -> queue_basic_block_trace
     riskyMutationGeneration = RiskyMutationGeneration(logger, queue_basic_block_trace, queue_mutation, main_lock, args)#   3:   queue_basic_block_trace -> queue_mutation
     stateChecker = StateChecker(logger, queue_state, main_lock, manifest_graph, args)  #4:     queue_state, manifest_graph -> log
