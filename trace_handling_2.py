@@ -37,11 +37,6 @@ class TraceHandling:
             for line in f.readlines():
                 line = line.strip()
 
-
-
-
-
-
                 if current_resId is None:
                     index = line.find("Starting to evaluate the resource")
                     if index != -1:
@@ -103,7 +98,10 @@ class TraceHandling:
                         if fd_to_close in FD_table: #TODO should we consider pointer we close without opening
                             del FD_table[fd_to_close]
                     case 'lstat':
-                        pass
+                        left_path = str_params.find(', ')
+                        path = str_params[1:left_path-1]
+                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = []
+                        resource_syscall_file[current_resId][path].append((['stats']))
                     case 'fcntl':
                         mode = str_params[str_params.rfind(',')+2:str_params.rfind(')')]
                         if mode == 'F_GETFL' or mode == 'F_GETFD':
@@ -131,11 +129,13 @@ class TraceHandling:
                             new_open_fd = int(syscall_ret[2:])
                             FD_table[new_open_fd] = (openat_param[1][2:-1], perms)
                     case 'statfs':
-                        pass
+                        path = str_params.split(',')[0][2:-1]
+                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = []
+                        resource_syscall_file[current_resId][path].append((['stats']))
                     case 'readlink':
                         pass
                     case 'chown':
-                        pass
+                        pass #TOOD don't perhaps later for mutations
                     case 'write':
                         left_fd2 = str_params.find(',')
                         fd = int(str_params[1:left_fd2])
@@ -145,11 +145,13 @@ class TraceHandling:
                     case 'rmdir':
                         pass
                     case 'chmod':
-                        pass
+                        pass  #TOOD don't perhaps later for mutations
                     case 'rename':
                         pass
                     case 'unlink':
-                        pass
+                        path = str_params[1:-2]
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = []
+                        resource_syscall_file[current_resId][path].append((['R'])) #fille removed
                     case 'mkdir':
                         pass
                     case 'writev':
@@ -182,8 +184,9 @@ class TraceHandling:
                     case 'utimes':
                         pass
                     case _:
-                        if (syscall_str == '+++ exited with 1 +++'
-                            or syscall_str[:11] == '--- SIGCHLD'):
+                        if (syscall_str[:len('+++ exited with ')] == '+++ exited with '
+                            or syscall_str[:11] == '--- SIGCHLD' or
+                                syscall_str[:11] == '--- SIGINT '):
                             pass
                         else:
                             print(syscall_name, end=')\n')
