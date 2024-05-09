@@ -37,7 +37,7 @@ class ManifestGraph:
                      id_corresp_resource = self.nodes_ressources[res_rel][0]
                      self.vertices_relation[id_corresp_resource, res_id] = "B"
             if "notify" in res['parameters']: #create notify edge (notify
-                notify = res['parameters']['notify'] if isinstance(res['parameters']['notify'], list) else [res['parameters']['notify']]
+                               notify = res['parameters']['notify'] if isinstance(res['parameters']['notify'], list) else [res['parameters']['notify']]
                 for res_rel in notify:
                      id_corresp_resource = self.nodes_ressources[res_rel][0]
                      self.vertices_relation[res_id, id_corresp_resource] = "N"
