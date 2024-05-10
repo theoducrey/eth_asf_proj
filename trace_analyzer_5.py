@@ -20,14 +20,16 @@ class TraceAnalyzer:
 
     def process_block_trace(self, mgraph: ManifestGraph, trace):
         #Directy log the result using the result logger
+        before_after = [['new', 'open']] # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
         #TODO
         # create -> open check
         relations = {}
-        for i in trace :
-            for j in i['new']:
-                for k in trace:
-                    if k != i and j in k['open']:
-                        relations[i][k] = 0
+        for relation in before_after:
+            for i in trace :
+                for j in i[relation[0]]:
+                    for k in trace:
+                        if k != i and j in k[relation[1]]:
+                            relations[i][k] = 0
         missing_dependencies = []
         for i in relations:
             for j in relations[i]:
