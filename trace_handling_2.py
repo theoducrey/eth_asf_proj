@@ -4,6 +4,11 @@ import re
 from collections import defaultdict
 
 
+def parse_path(path_raw):
+    if path_raw[0] == '"':
+        return path_raw[1:-1]
+    return path_raw
+
 class TraceHandling:
     def __init__(self, logger, queue_trace, queue_basic_block_trace, main_lock, args):
         self.main_lock = main_lock
@@ -20,7 +25,10 @@ class TraceHandling:
 
 
 
-
+    def parse_path(self, path_raw):
+        if path_raw[0]=='"':
+            return path_raw[1:-1]
+        return path_raw
 
     def process_track(self, trace):
         trace_id = trace[0]
@@ -30,8 +38,10 @@ class TraceHandling:
         buffer = defaultdict(list)
 
 
+        symbolic_link = {}
         FD_table = {0:('stdin',[]), 1:('stdout',[]), 2:('stderr',[])}
         resource_syscall_file = {}
+        file_correspondence = defaultdict(list) # list of pair then at the end fusion by looping on every path to replace them with the renamed one, we don't care about timeline because we are checking for resilience against timeline change
         with open(trace_dir + "/strace_output.txt", "r") as f:
             current_resId = None
             for line in f.readlines():
@@ -111,13 +121,13 @@ class TraceHandling:
                         else:
                             print("Not implemented fcntl", syscall_str)
                     case 'getcwd':
-                        pass
+                        pass # we don't care TODO don't understand the argument
                     case 'chdir':
-                        pass
+                        pass #has this an influence on the path later TODO
                     case "openat":
                         openat_param = str_params.split(',')
 
-                        if 'No such file or directory' in syscall_ret:
+                        if 'No such file or directory' in syscall_ret or 'No such device or address' in syscall_ret:
                             if openat_param[1] not in resource_syscall_file[current_resId]:
                                 resource_syscall_file[current_resId][openat_param[1]] = []
                             resource_syscall_file[current_resId][openat_param[1]].append("Not found")
@@ -133,27 +143,45 @@ class TraceHandling:
                         if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = []
                         resource_syscall_file[current_resId][path].append((['stats']))
                     case 'readlink':
-                        pass
+                        link_path = str_params.split(',')[0][2:-1]
+                        target_path = str_params.split(',')[0][2:-1]
+                        assert link_path not in symbolic_link
+                        symbolic_link[link_path] = target_path
                     case 'chown':
                         pass #TOOD don't perhaps later for mutations
                     case 'write':
                         left_fd2 = str_params.find(',')
                         fd = int(str_params[1:left_fd2])
+                        if fd not in FD_table:
+                            print("BIG BuG TO FIx close before write why ????? ", syscall_str)
+                            continue
                         path = FD_table[fd][0]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = []
                         resource_syscall_file[current_resId][path].append((['W']))
                     case 'rmdir':
-                        pass
+                        right_path = str_params.find(')')
+                        path = str_params[2:right_path - 1]
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
+                            path] = []
+                        resource_syscall_file[current_resId][path].append((['remove']))
                     case 'chmod':
                         pass  #TOOD don't perhaps later for mutations
                     case 'rename':
-                        pass
+                        pass #TODO don't understand the argument
+                        left_path2 = str_params.find(',')
+                        right_path2 = str_params.find(')')
+                        new_path =  str_params[1:left_path2]
+                        old_path =  str_params[left_path2+1:right_path2]
+                        file_correspondence[new_path].append((['rename',old_path]))  # file removed
                     case 'unlink':
                         path = str_params[1:-2]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = []
-                        resource_syscall_file[current_resId][path].append((['R'])) #fille removed
+                        resource_syscall_file[current_resId][path].append((['R'])) #file removed
                     case 'mkdir':
-                        pass
+                        path = str_params.split(',')[0][1:]
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
+                            path] = []
+                        resource_syscall_file[current_resId][path].append((['create_dir']))  # file removed
                     case 'writev':
                         left_fd_output = str_params.find(',')
                         fd = int(str_params[1:left_fd_output])
@@ -163,26 +191,35 @@ class TraceHandling:
                         left_fd2, right_fd2 = str_params.find(','), str_params.find(')')
                         fd1 = int(str_params[1:left_fd2])
                         fd2 = int(str_params[left_fd2+1:right_fd2])
-                        assert fd2 in FD_table
+                        if fd2 not in FD_table:
+                            print("Potential big error in dup2 :", syscall_str)
+                            continue
                         FD_table[fd1] = FD_table[fd2]
                     case 'clone':
                         pass # don't care
                     case 'unlinkat':
-                        pass
+                        path_left = str_params.find(',')
+                        path_right = str_params.rfind(',')
+                        path = str_params[path_left+3:path_right-1]
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
+                            path] = []
+                        resource_syscall_file[current_resId][path].append((['R']))  # file removed
                     case 'symlink':
-                        pass
+                        left_path2 = str_params.find(',')
+                        right_path2 = str_params.find(')')
+                        new_path = str_params[1:left_path2]
+                        old_path = str_params[left_path2 + 1:right_path2]
+                        file_correspondence[new_path].append((['rename', old_path]))  # file removed
                     case 'fchownat':
-                        pass
+                        pass # don't care about permission change
                     case 'utimensat':
-                        pass
+                        pass # don't care about timestamp change
                     case 'mkdirat':
-                        pass
+                        pass #TODO no path in the parameters
                     case 'utimes':
-                        pass
-                    case 'utimes':
-                        pass
-                    case 'utimes':
-                        pass
+                        pass # we don't care no real modification
+                    case 'lchown':
+                        pass # change owner of symbolic link we don't care
                     case _:
                         if (syscall_str[:len('+++ exited with ')] == '+++ exited with '
                             or syscall_str[:11] == '--- SIGCHLD' or
@@ -199,3 +236,4 @@ class TraceHandling:
 
 traceHandling = TraceHandling(None, None, None, None, None)
 traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
+
