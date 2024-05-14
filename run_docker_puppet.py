@@ -92,6 +92,7 @@ class SpawnRunPuppet:
     def process_mutation_queue(self):
         self.logger.info("spawn_run_puppet : processing started")
         while True:
+            print("Processing new mutation")
             mutations = self.queue_mutation.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
             self.process_mutation(mutations)
 
@@ -154,7 +155,7 @@ class SpawnRunPuppet:
 
 
 
-if __name__ == '__main__':
-    spawn = SpawnRunPuppet(None, None, None, None, None)
-    spawn.run_puppet_manifest_from_name("include java", "puppetlabs-java --version 11.0.0", 9)
+#if __name__ == '__main__':
+    #spawn = SpawnRunPuppet(None, None, None, None, None)
+    #spawn.run_puppet_manifest_from_name("include java", "puppetlabs-java --version 11.0.0", 9)
     #spawn.run_puppet_manifest("albatrossflavour-os_patching/init.pp", "albatrossflavour-os_patching-0.21.0", "output",8)
