@@ -145,7 +145,8 @@ class TraceHandling:
                     case 'readlink':
                         link_path = str_params.split(',')[0][2:-1]
                         target_path = str_params.split(',')[0][2:-1]
-                        assert link_path not in symbolic_link
+                        if link_path in symbolic_link:
+                            print("overriding symbolic link probably shoudn't be done")
                         symbolic_link[link_path] = target_path
                     case 'chown':
                         pass #TOOD don't perhaps later for mutations
