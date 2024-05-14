@@ -229,6 +229,6 @@ class TraceHandling:
         self.queue_basic_block_trace.put((trace_id, (resource_syscall_file, file_correspondence)))
 
 
-traceHandling = TraceHandling(None, None, None, None, None)
-traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
+#traceHandling = TraceHandling(None, None, None, None, None)
+#traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
 
