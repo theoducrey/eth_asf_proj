@@ -15,6 +15,7 @@ class TraceHandling:
 
     def process_tracks(self):
         self.logger.info("trace handling : processing started")
+        print("Processing new track")
         while True:
             print("Processing new track")
             trace = self.queue_trace.get()
@@ -91,12 +92,12 @@ class TraceHandling:
                         executable_path = params[0]
                         executable_args = params[1]
                         executable_vars = params[2]
-                        if executable_path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][executable_path] = []
-                        resource_syscall_file[current_resId][executable_path].append((['X']))
+                        if executable_path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][executable_path] = set()
+                        resource_syscall_file[current_resId][executable_path].add('execute')
                     case 'access':
                         access_path = str_params[1:str_params.find("\",")]
-                        if access_path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][access_path] = []
-                        resource_syscall_file[current_resId][access_path].append((['A']))
+                        if access_path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][access_path] = set()
+                        resource_syscall_file[current_resId][access_path].add('accessed')
                     case 'close':
                         right_fd = str_params.rfind(')')
                         fd_to_close = int(str_params[1:right_fd])
@@ -105,8 +106,8 @@ class TraceHandling:
                     case 'lstat':
                         left_path = str_params.find(', ')
                         path = str_params[1:left_path-1]
-                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = []
-                        resource_syscall_file[current_resId][path].append((['stats']))
+                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = set()
+                        resource_syscall_file[current_resId][path].add('stats')
                     case 'fcntl':
                         mode = str_params[str_params.rfind(',')+2:str_params.rfind(')')]
                         if mode == 'F_GETFL' or mode == 'F_GETFD':
@@ -124,8 +125,8 @@ class TraceHandling:
 
                         if 'No such file or directory' in syscall_ret or 'No such device or address' in syscall_ret:
                             if openat_param[1] not in resource_syscall_file[current_resId]:
-                                resource_syscall_file[current_resId][openat_param[1]] = []
-                            resource_syscall_file[current_resId][openat_param[1]].append("Not found")
+                                resource_syscall_file[current_resId][openat_param[1]] = set()
+                            resource_syscall_file[current_resId][openat_param[1]].add("Not found")
                         else:
                             perms = []
                             if 'O_RDONLY' in openat_param[2]: perms.append('R') #TODO implement the rest add a breakpoint for help
@@ -135,8 +136,8 @@ class TraceHandling:
                             FD_table[new_open_fd] = (openat_param[1][2:-1], perms)
                     case 'statfs':
                         path = str_params.split(',')[0][2:-1]
-                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = []
-                        resource_syscall_file[current_resId][path].append((['stats']))
+                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = set()
+                        resource_syscall_file[current_resId][path].add('stats')
                     case 'readlink':
                         link_path = str_params.split(',')[0][2:-1]
                         target_path = str_params.split(',')[0][2:-1]
@@ -152,14 +153,14 @@ class TraceHandling:
                             print("BIG BuG TO FIx close before write why ????? ", syscall_str)
                             continue
                         path = FD_table[fd][0]
-                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = []
-                        resource_syscall_file[current_resId][path].append((['W']))
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
+                        resource_syscall_file[current_resId][path].add('Write')
                     case 'rmdir':
                         right_path = str_params.find(')')
                         path = str_params[2:right_path - 1]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
-                            path] = []
-                        resource_syscall_file[current_resId][path].append((['remove']))
+                            path] = set()
+                        resource_syscall_file[current_resId][path].add('remove')
                     case 'chmod':
                         pass  #TOOD don't perhaps later for mutations
                     case 'rename':
@@ -171,13 +172,13 @@ class TraceHandling:
                         file_correspondence[new_path].append((['rename',old_path]))  # file removed
                     case 'unlink':
                         path = str_params[1:-2]
-                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = []
-                        resource_syscall_file[current_resId][path].append((['R'])) #file removed
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
+                        resource_syscall_file[current_resId][path].add('remove') #file removed
                     case 'mkdir':
                         path = str_params.split(',')[0][1:]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
-                            path] = []
-                        resource_syscall_file[current_resId][path].append((['create_dir']))  # file removed
+                            path] = set()
+                        resource_syscall_file[current_resId][path].add('create_dir')  # file removed
                     case 'writev':
                         left_fd_output = str_params.find(',')
                         fd = int(str_params[1:left_fd_output])
@@ -198,8 +199,8 @@ class TraceHandling:
                         path_right = str_params.rfind(',')
                         path = str_params[path_left+3:path_right-1]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
-                            path] = []
-                        resource_syscall_file[current_resId][path].append((['R']))  # file removed
+                            path] = set()
+                        resource_syscall_file[current_resId][path].add('remove')  # file removed
                     case 'symlink':
                         left_path2 = str_params.find(',')
                         right_path2 = str_params.find(')')

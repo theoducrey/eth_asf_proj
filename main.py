@@ -53,6 +53,7 @@ def main():
 
 
     target_manifest = "java"
+    logger.info("main started")
 
     #input -> output
     spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, main_lock, target_manifest)   #   1:   queue_mutation -> queue_trace
@@ -66,6 +67,7 @@ def main():
 
 
 
+    queue_mutation.put([])
 
     spawnRunPuppet_thread = Thread(target=spawnRunPuppet.process_mutation_queue(), args=())
     traceHandling_thread = Thread(target=traceHandling.process_tracks(), args=())
@@ -77,13 +79,12 @@ def main():
     riskyMutationGeneration_thread.start()
     stateChecker_thread.start()
     traceAnalyzer_thread.start()
-    spawnRunPuppet_thread.join()
     traceHandling_thread.join()
+    spawnRunPuppet_thread.join()
     riskyMutationGeneration_thread.join()
     stateChecker_thread.join()
     traceAnalyzer_thread.join()
 
-    queue_mutation.put([])
 
 if __name__ == '__main__':
     main()
