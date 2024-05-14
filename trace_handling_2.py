@@ -95,7 +95,7 @@ class TraceHandling:
                         if executable_path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][executable_path] = set()
                         resource_syscall_file[current_resId][executable_path].add('execute')
                     case 'access':
-                        access_path = str_params[1:str_params.find("\",")]
+                        access_path = str_params[2:str_params.find("\",")]
                         if access_path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][access_path] = set()
                         resource_syscall_file[current_resId][access_path].add('accessed')
                     case 'close':
@@ -105,7 +105,7 @@ class TraceHandling:
                             del FD_table[fd_to_close]
                     case 'lstat':
                         left_path = str_params.find(', ')
-                        path = str_params[1:left_path-1]
+                        path = str_params[2:left_path-1]
                         if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = set()
                         resource_syscall_file[current_resId][path].add('stats')
                     case 'fcntl':
@@ -125,8 +125,8 @@ class TraceHandling:
 
                         if 'No such file or directory' in syscall_ret or 'No such device or address' in syscall_ret:
                             if openat_param[1] not in resource_syscall_file[current_resId]:
-                                resource_syscall_file[current_resId][openat_param[1]] = set()
-                            resource_syscall_file[current_resId][openat_param[1]].add("Not found")
+                                resource_syscall_file[current_resId][openat_param[1][2:-1]] = set()
+                            resource_syscall_file[current_resId][openat_param[1][2:-1]].add("Not found")
                         else:
                             perms = []
                             if 'O_RDONLY' in openat_param[2]: perms.append('R') #TODO implement the rest add a breakpoint for help
@@ -171,7 +171,7 @@ class TraceHandling:
                         old_path =  str_params[left_path2+1:right_path2]
                         file_correspondence[new_path].append((['rename',old_path]))  # file removed
                     case 'unlink':
-                        path = str_params[1:-2]
+                        path = str_params[2:-2]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
                         resource_syscall_file[current_resId][path].add('remove') #file removed
                     case 'mkdir':
@@ -229,6 +229,6 @@ class TraceHandling:
         self.queue_basic_block_trace.put((trace_id, (resource_syscall_file, file_correspondence)))
 
 
-#traceHandling = TraceHandling(None, None, None, None, None)
-#traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
+traceHandling = TraceHandling(None, None, None, None, None)
+traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
 
