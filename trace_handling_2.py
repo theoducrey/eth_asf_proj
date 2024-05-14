@@ -4,10 +4,6 @@ import re
 from collections import defaultdict
 
 
-def parse_path(path_raw):
-    if path_raw[0] == '"':
-        return path_raw[1:-1]
-    return path_raw
 
 class TraceHandling:
     def __init__(self, logger, queue_trace, queue_basic_block_trace, main_lock, args):
@@ -18,17 +14,13 @@ class TraceHandling:
         self.queue_basic_block_trace = queue_basic_block_trace
 
     def process_tracks(self):
-        self.logger.info("spawn_run_puppet : processing started")
+        self.logger.info("trace handling : processing started")
         while True:
+            print("Processing new track")
             trace = self.queue_trace.get()
             self.process_track(trace)
 
 
-
-    def parse_path(self, path_raw):
-        if path_raw[0]=='"':
-            return path_raw[1:-1]
-        return path_raw
 
     def process_track(self, trace):
         trace_id = trace[0]
@@ -38,7 +30,7 @@ class TraceHandling:
         buffer = defaultdict(list)
 
 
-        symbolic_link = {}
+        #symbolic_link = {}
         FD_table = {0:('stdin',[]), 1:('stdout',[]), 2:('stderr',[])}
         resource_syscall_file = {}
         file_correspondence = defaultdict(list) # list of pair then at the end fusion by looping on every path to replace them with the renamed one, we don't care about timeline because we are checking for resilience against timeline change
@@ -88,11 +80,14 @@ class TraceHandling:
 
 
 
-                str_params = re.sub(r'/\*.*?\*/', '', str_params)
+                str_params = re.sub(r'/\* .*? \*/', '', str_params)
 
                 match syscall_name:
                     case 'execve': #if FD_CLOEXEC set => automatically close the file desciriptor
-                        params = ast.literal_eval(str_params)
+                        try:
+                            params = ast.literal_eval(str_params)
+                        except SyntaxError as e:
+                            print(e)
                         executable_path = params[0]
                         executable_args = params[1]
                         executable_vars = params[2]
@@ -145,9 +140,9 @@ class TraceHandling:
                     case 'readlink':
                         link_path = str_params.split(',')[0][2:-1]
                         target_path = str_params.split(',')[0][2:-1]
-                        if link_path in symbolic_link:
+                        if link_path in file_correspondence:
                             print("overriding symbolic link probably shoudn't be done")
-                        symbolic_link[link_path] = target_path
+                        file_correspondence[link_path].append(target_path)
                     case 'chown':
                         pass #TOOD don't perhaps later for mutations
                     case 'write':
@@ -216,7 +211,7 @@ class TraceHandling:
                     case 'utimensat':
                         pass # don't care about timestamp change
                     case 'mkdirat':
-                        pass #TODO no path in the parameters
+                        pass # no path in the parameters
                     case 'utimes':
                         pass # we don't care no real modification
                     case 'lchown':
@@ -228,13 +223,11 @@ class TraceHandling:
                             pass
                         else:
                             print(syscall_name, end=')\n')
-        #
-
-        basic_block_trace = None
-        self.queue_basic_block_trace.put(basic_block_trace)
-        ("")
 
 
-traceHandling = TraceHandling(None, None, None, None, None)
-traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
+        self.queue_basic_block_trace.put((trace_id, (resource_syscall_file, file_correspondence)))
+
+
+#traceHandling = TraceHandling(None, None, None, None, None)
+#traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
 
