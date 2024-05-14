@@ -150,6 +150,9 @@ class SpawnRunPuppet:
                                  " --debug --evaltrace"
                          )))  #puppet apply /etc/puppetlabs/code/environments/production/manifests/init.pp --debug --evaltrace
             commands.append(command_docker_shell + "bash -c \"puppet catalog find > /"+local_output_dir + "/puppet_catalog.json\"")
+
+            commands.append(command_docker_shell + "bash -c \"tree -d > /"+local_output_dir + "/state.txt\"")
+
             commands.append("docker-compose down")
 
             for command in commands:

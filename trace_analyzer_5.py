@@ -18,9 +18,12 @@ class TraceAnalyzer:
             block_trace = self.queue_basic_block_trace.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
             self.process_block_trace(block_trace)
 
-    def process_block_trace(self, mgraph: ManifestGraph, trace_old):
+    def process_block_trace(self, mgraph: ManifestGraph, trace_temp):
+        trace_old = trace_temp[1][0]
         trace = {}
+        #print(trace_old)
         for i in trace_old:
+            trace[i] = {}
             for j in trace_old[i]:
                 for k in trace_old[i][j]:
                     if i not in trace or k not in trace[i]:
@@ -29,19 +32,24 @@ class TraceAnalyzer:
                         trace[i][k].add(j)
 
         #Directy log the result using the result logger
-        before_after = [['A', 'remove']] # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
+        before_after = [['accessed', 'remove'],["accessed", "accessed"]] # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
         #TODO
         # create -> open check
         relations = {}
         for relation in before_after:
-            for i in trace :
-                for j in trace[i][relation[0]]:
-                    for k in trace:
-                        if k != i and j in trace[k][relation[1]]:
-                            relations[i][k] = 0
+            for i in trace:
+                if relation[0] in trace[i]:
+                    for j in trace[i][relation[0]]:
+                        for k in trace:
+                            if relation[1] in trace[k]:
+                                if k != i and j in trace[k][relation[1]]:
+                                    if i not in relations:
+                                        relations[i] = {}
+                                    relations[i][k] = 0
         missing_dependencies = []
         for i in relations:
             for j in relations[i]:
                 if mgraph.edge_res1_res2(i, j) != "B":
                     missing_dependencies.append([i, j])
         return missing_dependencies
+

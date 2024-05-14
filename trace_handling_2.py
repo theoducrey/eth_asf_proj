@@ -1,6 +1,9 @@
 import os
 import ast
 import re
+import json
+from manifestGraph import ManifestGraph
+from trace_analyzer_5 import TraceAnalyzer
 from collections import defaultdict
 
 
@@ -226,9 +229,21 @@ class TraceHandling:
                             print(syscall_name, end=')\n')
 
 
-        self.queue_basic_block_trace.put((trace_id, (resource_syscall_file, file_correspondence)))
+        return (trace_id, (resource_syscall_file, file_correspondence))
+        #self.queue_basic_block_trace.put((trace_id, (resource_syscall_file, file_correspondence)))
 
 
 traceHandling = TraceHandling(None, None, None, None, None)
-traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
+trace_basic = traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
 
+
+search_dir = "output/java_2024-04-27_20-42-20/0"+"/"
+with open(search_dir+"puppet_catalog.json") as json_file:
+    json_file.readline()
+    catalog_json = "java",json.load(json_file)
+    #print(catalog_json)
+manifest = ManifestGraph(catalog_json)
+
+
+traceAnalyzer = TraceAnalyzer(None, None, None, None, None)
+traceAnalyzer.process_block_trace(manifest, trace_basic)
