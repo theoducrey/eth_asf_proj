@@ -81,7 +81,9 @@ class SpawnRunPuppet:
 
 
     def get_target_catalog(self):
+        print("getting target catalog")
         self.run_puppet_manifest_from_name([], self.current_id)
+        print("target catalog getted ")
         search_dir = self.output_dir + str(self.current_id)+"/"
         with open(search_dir+"puppet_catalog.json") as json_file:
             json_file.readline()
@@ -90,10 +92,11 @@ class SpawnRunPuppet:
         return (self.target_manifest, catalog_json)
 
     def process_mutation_queue(self):
+        print("SpawnRunPuppet:  processing started")
         self.logger.info("spawn_run_puppet : processing started")
         while True:
-            print("Processing new mutation")
             mutations = self.queue_mutation.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
+            print("Processing new mutation")
             self.process_mutation(mutations)
 
     def process_mutation(self, mutations: list):
@@ -150,6 +153,7 @@ class SpawnRunPuppet:
             commands.append("docker-compose down")
 
             for command in commands:
+                print("SpawnRunPuppet: " + command)
                 subprocess.call(command, shell=True, stdout=output, stderr=output)
 
 
