@@ -18,9 +18,12 @@ class TraceAnalyzer:
             block_trace = self.queue_basic_block_trace.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
             self.process_block_trace(block_trace)
 
-    def process_block_trace(self, mgraph: ManifestGraph, trace):
+    def process_block_trace(self, mgraph: ManifestGraph, trace_old):
+        trace = {}
+        for i in trace_old:
+
         #Directy log the result using the result logger
-        before_after = [['new', 'open']] # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
+        before_after = [['A', 'remove']] # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
         #TODO
         # create -> open check
         relations = {}
