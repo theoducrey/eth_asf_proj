@@ -16,7 +16,7 @@ class StateChecker:
     def process_state(self, state):
         #TODO compare state with past states
         differences = [] # each list in this list corresponds to differences between states for each saved state
-
+        state = self.convert_to_state_graph(state)
         for i in self.state_accumulator:
             differences = self.compare_states(state, i)
 
@@ -33,3 +33,27 @@ class StateChecker:
             else:
                 only_first.append(i)
         return only_first
+    def convert_to_state_graph(self, state):
+        #state = []
+        original_dir = "main_dir"
+        #with open("check.txt", "r") as f:
+        #    state = f.readlines()
+        #directory = []
+        for i in state:
+            temp = i.split(" ")
+            directory.append(temp)
+        directory = directory[1:-2]
+        edges = []
+        queue = []
+        curr_count = 1
+        queue.append(original_dir)
+        for i in directory:
+            queue.append(i[-1][:-1])
+            if len(i) <= curr_count:
+                for j in range(curr_count-len(i)+1):
+                    queue.pop(len(queue)-2)
+            edges.append([queue[-2],queue[-1]])
+            if curr_count < len(i):
+                curr_count+= 1
+            else:
+                curr_count = len(i)
