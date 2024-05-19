@@ -55,12 +55,13 @@ syscall_filter = [
 
 
 class SpawnRunPuppet:
-    def __init__(self, logger, queue_mutation, queue_trace, main_lock, target_manifest):
+    def __init__(self, logger, queue_mutation, queue_trace, queue_state, main_lock, target_manifest):
         self.main_lock = main_lock
         self.logger = logger
         self.target_manifest = target_manifest
         self.queue_mutation = queue_mutation
         self.queue_trace = queue_trace  #contain id of trace
+        self.queue_state = queue_state
         self.next_id = len(os.listdir("output")) + 1
         self.existing_ids = set()
         self.output_dir = "output/"+target_manifest+"_" + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + "/"
@@ -124,6 +125,7 @@ class SpawnRunPuppet:
         self.run_puppet_manifest_from_name(mutations_commands, self.current_id)
         local_output_dir = self.output_dir + str(self.current_id)
         self.queue_trace.put((self.current_id, local_output_dir, self.target_manifest))
+        self.queue_state.put((self.current_id, local_output_dir))
         self.current_id += 1
 
 
