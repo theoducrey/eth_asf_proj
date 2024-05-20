@@ -2,7 +2,10 @@ import os
 import ast
 import re
 import json
+from multiprocessing import Queue
+
 from manifestGraph import ManifestGraph
+from risky_mutation_generation_3 import RiskyMutationGeneration
 from trace_analyzer_5 import TraceAnalyzer
 from collections import defaultdict
 
@@ -37,7 +40,7 @@ class TraceHandling:
         #symbolic_link = {}
         FD_table = {0:('stdin',[]), 1:('stdout',[]), 2:('stderr',[])}
         resource_syscall_file = {}
-        file_correspondence = defaultdict(list) # list of pair then at the end fusion by looping on every path to replace them with the renamed one, we don't care about timeline because we are checking for resilience against timeline change
+        file_correspondence = dict() # list of pair then at the end fusion by looping on every path to replace them with the renamed one, we don't care about timeline because we are checking for resilience against timeline change
         with open(trace_dir + "/strace_output.txt", "r") as f:
             current_resId = None
             for line in f.readlines():
@@ -146,7 +149,7 @@ class TraceHandling:
                         target_path = str_params.split(',')[0][2:-1]
                         if link_path in file_correspondence:
                             print("overriding symbolic link probably shoudn't be done")
-                        file_correspondence[link_path].append(target_path)
+                        file_correspondence[link_path] =('link', target_path)
                     case 'chown':
                         pass #TOOD don't perhaps later for mutations
                     case 'write':
@@ -157,7 +160,7 @@ class TraceHandling:
                             continue
                         path = FD_table[fd][0]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
-                        resource_syscall_file[current_resId][path].add('Write')
+                        resource_syscall_file[current_resId][path].add('write')
                     case 'rmdir':
                         right_path = str_params.find(')')
                         path = str_params[2:right_path - 1]
@@ -172,7 +175,7 @@ class TraceHandling:
                         right_path2 = str_params.find(')')
                         new_path =  str_params[1:left_path2]
                         old_path =  str_params[left_path2+1:right_path2]
-                        file_correspondence[new_path].append((['rename',old_path]))  # file removed
+                        file_correspondence[new_path] = ('rename', old_path) # file removed
                     case 'unlink':
                         path = str_params[2:-2]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
@@ -209,7 +212,7 @@ class TraceHandling:
                         right_path2 = str_params.find(')')
                         new_path = str_params[1:left_path2]
                         old_path = str_params[left_path2 + 1:right_path2]
-                        file_correspondence[new_path].append((['rename', old_path]))  # file removed
+                        file_correspondence[new_path] = ('rename', old_path) # file removed
                     case 'fchownat':
                         pass # don't care about permission change
                     case 'utimensat':
@@ -228,16 +231,18 @@ class TraceHandling:
                         else:
                             print(syscall_name, end=')\n')
 
+        for resId in resource_syscall_file:
+            resource_syscall_file[resId] = {k if k not in file_correspondence.keys() else file_correspondence[k][1]: v for k, v in resource_syscall_file[resId].items()}
 
-        return (trace_id, (resource_syscall_file, file_correspondence))
+        return (trace_id, resource_syscall_file)
         #self.queue_basic_block_trace.put((trace_id, (resource_syscall_file, file_correspondence)))
 
 
 traceHandling = TraceHandling(None, None, None, None, None)
-trace_basic = traceHandling.process_track((0, "output/java_2024-04-27_20-42-20/0", None))
+trace_basic = traceHandling.process_track((0, "output/java_2024-05-20_10-18-27/0", None))
 
 
-search_dir = "output/java_2024-04-27_20-42-20/0"+"/"
+search_dir = "output/java_2024-05-20_10-18-27/0"+"/"
 with open(search_dir+"puppet_catalog.json") as json_file:
     json_file.readline()
     catalog_json = "java",json.load(json_file)
@@ -245,5 +250,8 @@ with open(search_dir+"puppet_catalog.json") as json_file:
 manifest = ManifestGraph(catalog_json)
 
 
-traceAnalyzer = TraceAnalyzer(None, None, None, None, None)
-traceAnalyzer.process_block_trace(manifest, trace_basic)
+#traceAnalyzer = TraceAnalyzer(None, None, None, None, None)
+#traceAnalyzer.process_block_trace(manifest, trace_basic)
+
+riskyMutationGeneration = RiskyMutationGeneration(None, Queue(), Queue(), None, None)
+riskyMutationGeneration.process_block_trace(trace_basic)
