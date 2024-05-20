@@ -1,7 +1,7 @@
 
 import argparse
 import logging
-from multiprocessing import Queue
+from queue import Queue
 from threading import Thread, Lock
 
 from manifestGraph import ManifestGraph
@@ -48,15 +48,15 @@ def main():
     queue_trace = Queue()
     queue_state = Queue()
     queue_basic_block_trace = Queue()
-    queue_mutation = Queue()
-    queue_mutation = Queue()
+
+    queue_mutation.put([]) #initialize the pipeline by running a first time without mutation
 
 
     target_manifest = "java"
     logger.info("main started")
 
     #input -> output
-    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, target_manifest)   #   1:   queue_mutation -> queue_trace
+    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, main_lock, target_manifest)   #   1:   queue_mutation -> queue_trace
     target_catalog = spawnRunPuppet.get_target_catalog()
     target_manifest_graph = ManifestGraph(target_catalog)
     traceHandling = TraceHandling(logger, queue_trace, queue_basic_block_trace, main_lock, args)   #   2:   queue_trace -> queue_basic_block_trace
@@ -67,13 +67,12 @@ def main():
 
 
 
-    queue_mutation.put([])
 
-    spawnRunPuppet_thread = Thread(target=spawnRunPuppet.process_mutation_queue(), args=())
-    traceHandling_thread = Thread(target=traceHandling.process_tracks(), args=())
-    riskyMutationGeneration_thread = Thread(target=riskyMutationGeneration.process_basic_block_trace_queue(), args=())
-    stateChecker_thread = Thread(target=stateChecker.process_state_queue(), args=())
-    traceAnalyzer_thread = Thread(target=traceAnalyzer.process_basic_block_trace_queue(), args=())
+    spawnRunPuppet_thread = Thread(target=spawnRunPuppet.process_mutation_queue, args=())
+    traceHandling_thread = Thread(target=traceHandling.process_tracks, args=())
+    riskyMutationGeneration_thread = Thread(target=riskyMutationGeneration.process_basic_block_trace_queue, args=())
+    stateChecker_thread = Thread(target=stateChecker.process_state_queue, args=())
+    traceAnalyzer_thread = Thread(target=traceAnalyzer.process_basic_block_trace_queue, args=())
     spawnRunPuppet_thread.start()
     traceHandling_thread.start()
     riskyMutationGeneration_thread.start()
