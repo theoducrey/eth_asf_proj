@@ -1,4 +1,5 @@
 import random
+import string
 from collections import defaultdict
 
 
@@ -57,8 +58,21 @@ class RiskyMutationGeneration:
 
                 randomOperation = random.choices(['delete', 'rename', 'create'], weights=(w_delete, w_rename, w_create))
 
+
                 self.mutation_already_generated[file].append(randomOperation)
-                new_mutations.append((randomOperation, file))
+
+                arg2 = None
+                match randomOperation:
+                    case "rename":
+                        arg2 = ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
+                    case "delete":
+                        pass
+                    case "create":
+                        pass
+                    case _:
+                        raise NotImplemented
+
+                new_mutations.append((randomOperation, file, arg2))
             if len(new_mutations) <= 0:
                 print("Ressource %s completely explored for run : %s" % (ressourceId, block_trace_id))
             self.queue_mutation.put((block_trace_id, new_mutations))

@@ -115,6 +115,11 @@ class SpawnRunPuppet:
             match mut[0]:
                 case "rename":
                     mutations_commands.append("mv "+mut[1]+" "+mut[1].split("/")[:-1]+mut[2])
+                case "delete":
+                    mutations_commands.append("rm -rf "+mut[1])
+                    raise NotImplemented
+                case "create":
+                    mutations_commands.append("touch "+mut[1])
                     raise NotImplemented
                 case "edit_append":
                     raise NotImplemented
