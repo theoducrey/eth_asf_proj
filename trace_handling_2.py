@@ -199,7 +199,8 @@ class TraceHandling:
                         left_fd_output = str_params.find(',')
                         fd = int(str_params[1:left_fd_output])
                         if fd != 1: # print to stdout are ignore because thread safe
-                            raise NotImplemented
+                            print("Write syscall are not tacken into account with the current version of the testing pipeline")
+                            #raise NotImplemented
                     case 'dup2': #TODO not sure if correct but I inversed the order of the arg from the man page
                         left_fd2, right_fd2 = str_params.find(','), str_params.find(')')
                         fd1 = int(str_params[1:left_fd2])
