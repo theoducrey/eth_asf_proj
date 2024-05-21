@@ -55,7 +55,7 @@ syscall_filter = [
 
 
 class SpawnRunPuppet:
-    def __init__(self, logger, queue_mutation, queue_trace, queue_state, main_lock, target_manifest, oneRun=False):
+    def __init__(self, logger, logger_result_state, logger_result_dependencies, queue_mutation, queue_trace, queue_state, main_lock, target_manifest, oneRun=False):
         self.main_lock = main_lock
         self.logger = logger
         self.target_manifest = target_manifest
@@ -75,6 +75,8 @@ class SpawnRunPuppet:
         self.manifest_content = data[target_manifest]["manifest_content"]
         self.module_name = data[target_manifest]["module_name"]
         self.module_version = data[target_manifest]["version"]
+        self.logger_result_state = logger_result_state
+        self.logger_result_dependencies = logger_result_dependencies
 
     def init_image(self):
         #self.logger.info("Pulling puppetserver image")
@@ -166,6 +168,10 @@ class SpawnRunPuppet:
             for command in commands:
                 print("SpawnRunPuppet: " + command)
                 subprocess.call(command, shell=True, stdout=output, stderr=output)
+
+        if not os.path.exists(local_output_dir + "puppet_catalog.log") or not os.path.exists(local_output_dir + "strace_output.txt"):
+            self.logger_result_state.info("Run of puppet manifest crash with mutation :")
+            self.logger_result_dependencies.info("Run of puppet manifest crash with mutation :")
 
 
 
