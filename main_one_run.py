@@ -77,6 +77,8 @@ def main():
 
     for i in range(10):
         riskyMutationGeneration.process_basic_block_trace_queue()
+        if queue_mutation.qsize()==0:
+            break # if all mutation were explored before the max number iteration just stop
         spawnRunPuppet.process_mutation_queue()
         traceHandling.process_tracks()
         stateChecker.process_state_queue()
