@@ -40,7 +40,6 @@ class StateChecker:
         return only_first
 
     def convert_to_state_graph(self, state_dir):
-        state = []
         original_dir = "main_dir"
         with open(state_dir + "/state.txt", "r") as f:
             state = f.readlines()
@@ -66,4 +65,4 @@ class StateChecker:
             else:
                 curr_count = len(i)
                 actual_count = curr_count
-        return state
+        return edges
