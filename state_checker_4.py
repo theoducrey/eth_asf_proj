@@ -27,7 +27,7 @@ class StateChecker:
 
         self.state_accumulator.append(state)
 
-        self.logger_result.info(str(differences))
+        self.logger_result.info("state differences " + str(state_info[0]) + ": " + str(differences))
 
     def compare_states(self, state1, state2):
         both_have = [] # both have these edges
@@ -60,7 +60,7 @@ class StateChecker:
                     queue.pop(len(queue)-2)
             edges.append([queue[-2],queue[-1]])
             if curr_count < len(i):
-                curr_count+= 1
+                curr_count += 1
             else:
                 curr_count = len(i)
         return state
