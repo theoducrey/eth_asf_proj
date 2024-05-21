@@ -275,6 +275,7 @@ class TraceHandling:
                             else:
                                 break
                         working_dir = working_dir+new_root+'/'
+
                         continue # this may need to be implemented in the future version
                     case _:
                         if (syscall_str[:len('+++ exited with ')] == '+++ exited with '

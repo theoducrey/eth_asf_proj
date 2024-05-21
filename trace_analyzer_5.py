@@ -36,7 +36,9 @@ class TraceAnalyzer:
                         trace[i][k].add(j)
 
         #Directy log the result using the result logger
-        before_after = [['accessed', 'remove'],["accessed", "accessed"]] # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
+        # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
+        before_after = [['accessed', 'remove'], ["accessed", "accessed"]] #fake one to cause problems
+        #before_after = [['accessed', 'remove']] # real dependencies
         #TODO
         # create -> open check
         relations = {}

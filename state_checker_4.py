@@ -40,7 +40,6 @@ class StateChecker:
         return only_first
 
     def convert_to_state_graph(self, state_dir):
-        state = []
         original_dir = "main_dir"
         with open(state_dir + "/state.txt", "r") as f:
             state = f.readlines()
@@ -52,15 +51,18 @@ class StateChecker:
         edges = []
         queue = []
         curr_count = 1
+        actual_count = 1
         queue.append(original_dir)
         for i in directory:
             queue.append(i[-1][:-1])
-            if len(i) <= curr_count:
+            if len(i) <= actual_count:
                 for j in range(curr_count-len(i)+1):
                     queue.pop(len(queue)-2)
             edges.append([queue[-2],queue[-1]])
-            if curr_count < len(i):
+            if actual_count < len(i):
                 curr_count += 1
+                actual_count = len(i)
             else:
                 curr_count = len(i)
-        return state
+                actual_count = curr_count
+        return edges
