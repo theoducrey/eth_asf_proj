@@ -235,6 +235,8 @@ class TraceHandling:
                         pass # we don't care no real modification
                     case 'lchown':
                         pass # change owner of symbolic link we don't care
+                    case 'link':
+                        pass
                     case _:
                         if (syscall_str[:len('+++ exited with ')] == '+++ exited with '
                             or syscall_str[:11] == '--- SIGCHLD' or
