@@ -113,7 +113,7 @@ class TraceHandling:
                         resource_syscall_file[current_resId][working_dir+str(executable_path)].add('execute')
                     case 'access':
                         access_path = str_params[2:str_params.find("\",")]
-                        if access_path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][access_path] = set()
+                        if access_path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][working_dir+access_path] = set()
                         resource_syscall_file[current_resId][working_dir+access_path].add('accessed')
                     case 'close':
                         right_fd = str_params.rfind(')')
@@ -123,7 +123,7 @@ class TraceHandling:
                     case 'lstat':
                         left_path = str_params.find(', ')
                         path = str_params[2:left_path-1]
-                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = set()
+                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][working_dir+path] = set()
                         resource_syscall_file[current_resId][working_dir+path].add('stats')
                     case 'fcntl':
                         mode = str_params[str_params.rfind(',')+2:str_params.rfind(')')]
@@ -153,7 +153,7 @@ class TraceHandling:
                             FD_table[new_open_fd] = (openat_param[1][2:-1], perms)
                     case 'statfs':
                         path = str_params.split(',')[0][2:-1]
-                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][path] = set()
+                        if path not in resource_syscall_file[current_resId] : resource_syscall_file[current_resId][working_dir+path] = set()
                         resource_syscall_file[current_resId][working_dir+path].add('stats')
                     case 'readlink':
                         link_path = str_params.split(',')[0][2:-1]
@@ -170,13 +170,13 @@ class TraceHandling:
                             self.logger.info("BIG BuG TO FIx close before write why ????? %s" % (str(syscall_str)))
                             continue
                         path = FD_table[fd][0]
-                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][working_dir+path] = set()
                         resource_syscall_file[current_resId][working_dir+path].add('write')
                     case 'rmdir':
                         right_path = str_params.find(')')
                         path = str_params[2:right_path - 1]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
-                            path] = set()
+                            working_dir+path] = set()
                         resource_syscall_file[current_resId][working_dir+path].add('remove')
                     case 'chmod':
                         pass  #TOOD don't perhaps later for mutations
@@ -195,12 +195,12 @@ class TraceHandling:
                         file_correspondence[working_dir+new_path] = ('rename', working_dir+old_path) # file removed
                     case 'unlink':
                         path = str_params[2:-2]
-                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
+                        if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][working_dir+path] = set()
                         resource_syscall_file[current_resId][working_dir+path].add('remove') #file removed
                     case 'mkdir':
                         path = str_params.split(',')[0][1:]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
-                            path] = set()
+                            working_dir+path] = set()
                         resource_syscall_file[current_resId][working_dir+path].add('create_dir')  # file removed
                     case 'writev':
                         left_fd_output = str_params.find(',')
@@ -224,7 +224,7 @@ class TraceHandling:
                         path_right = str_params.rfind(',')
                         path = str_params[path_left+3:path_right-1]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
-                            path] = set()
+                            working_dir+path] = set()
                         resource_syscall_file[current_resId][working_dir+path].add('remove')  # file removed
                     case 'symlink':
                         left_path2 = str_params.find(',')
@@ -261,7 +261,7 @@ class TraceHandling:
                             new_path = str_params[left_path2 + 3:right_path2-1]
                         file_correspondence[working_dir+new_path] = ('rename', working_dir+old_path) # file removed
                     case 'fchdir':
-                        working_dir = working_dir+FD_table[int(str_params[str_params.find('(')+1:str_params.find(')')])]
+                        working_dir = working_dir+FD_table[int(str_params[str_params.find('(')+1:str_params.find(')')])][0]
                         continue # this may need to be implemented in the future version
                     case _:
                         if (syscall_str[:len('+++ exited with ')] == '+++ exited with '
