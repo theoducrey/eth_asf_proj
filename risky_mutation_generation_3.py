@@ -78,6 +78,7 @@ class RiskyMutationGeneration:
                 new_mutations.append((randomOperation, file, arg2))
             if len(new_mutations) <= 0:
                 print("Ressource %s completely explored for run : %s" % (ressourceId, block_trace_id))
+                continue
             self.queue_mutation.put((block_trace_id, new_mutations))
 
         #  check for missing Notifiers -> does it change the state
