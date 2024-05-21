@@ -75,6 +75,7 @@ def main():
 
     queue_mutation.put([]) #initialize the pipeline by running a first time without mutation
     spawnRunPuppet.process_mutation_queue()
+    #queue_trace.put((1, 'output/java_2024-05-21_14-11-19/1', 'java'))
     traceHandling.process_tracks()
     stateChecker.process_state_queue()
     traceAnalyzer.process_basic_block_trace_queue()

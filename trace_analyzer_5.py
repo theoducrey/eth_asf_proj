@@ -29,10 +29,10 @@ class TraceAnalyzer:
         for i in trace_old:
             i_new = ""
             if i[0] == "/":
-                i_new = i[1:0]
+                i_new = i[1:]
             else:
                 i_new = i
-            trace[i] = {}
+            trace[i_new] = {}
             for j in trace_old[i]:
                 for k in trace_old[i][j]:
                     if i_new not in trace or k not in trace[i_new]:
