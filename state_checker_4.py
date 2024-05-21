@@ -27,8 +27,7 @@ class StateChecker:
 
         self.state_accumulator.append(state)
 
-        with open(state_info[1]+ "/differences.txt", "w") as f:
-            f.write(differences)
+        self.result_logger.info(str(differences))
 
     def compare_states(self, state1, state2):
         both_have = [] # both have these edges

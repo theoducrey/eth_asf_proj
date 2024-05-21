@@ -60,5 +60,5 @@ class TraceAnalyzer:
             for j in relations[i]:
                 if mgraph.edge_res1_res2(i, j) != "B":
                     missing_dependencies.append([i, j])
-        return missing_dependencies
+        self.result_logger.info(str(missing_dependencies))
 
