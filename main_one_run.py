@@ -58,13 +58,13 @@ def main():
     logger.info("main started")
 
     #input -> output
-    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, target_manifest) # 1: queue_mutation -> queue_trace
+    spawnRunPuppet = SpawnRunPuppet(logger, queue_mutation, queue_trace, queue_state, main_lock, target_manifest, oneRun=True) # 1: queue_mutation -> queue_trace
     target_catalog = spawnRunPuppet.get_target_catalog()
     target_manifest_graph = ManifestGraph(target_catalog)
-    traceHandling = TraceHandling(logger, queue_trace, queue_basic_block_trace_for_mutation, queue_basic_block_trace_for_checker, main_lock, args)  # 2:   queue_trace -> queue_basic_block_trace
-    riskyMutationGeneration = RiskyMutationGeneration(logger, queue_basic_block_trace_for_mutation, queue_mutation, main_lock, args)  # 3:   queue_basic_block_trace_for_mutation -> queue_mutation
-    stateChecker = StateChecker(logger, logger_result_state, queue_state, main_lock, target_manifest_graph, args)  # 4:     queue_state, manifest_graph -> log
-    traceAnalyzer = TraceAnalyzer(logger, logger_result_dependencies, queue_basic_block_trace_for_checker, main_lock, target_manifest_graph, args)  # 5:     queue_basic_block_trace_for_checker, manifest_graph  -> log
+    traceHandling = TraceHandling(logger, queue_trace, queue_basic_block_trace_for_mutation, queue_basic_block_trace_for_checker, main_lock, args, oneRun=True)  # 2:   queue_trace -> queue_basic_block_trace
+    riskyMutationGeneration = RiskyMutationGeneration(logger, queue_basic_block_trace_for_mutation, queue_mutation, main_lock, args, oneRun=True)  # 3:   queue_basic_block_trace_for_mutation -> queue_mutation
+    stateChecker = StateChecker(logger, logger_result_state, queue_state, main_lock, target_manifest_graph, args, oneRun=True)  # 4:     queue_state, manifest_graph -> log
+    traceAnalyzer = TraceAnalyzer(logger, logger_result_dependencies, queue_basic_block_trace_for_checker, main_lock, target_manifest_graph, args, oneRun=True)  # 5:     queue_basic_block_trace_for_checker, manifest_graph  -> log
 
 
 
