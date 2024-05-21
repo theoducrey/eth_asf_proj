@@ -56,7 +56,8 @@ class TraceHandling:
                         current_resId_left, current_resId_right = line.find('Info: ') + len("Info: "), index - 2
                         current_resId = line[current_resId_left:current_resId_right]
                         if current_resId[0] == "/": current_resId = current_resId[1:]
-                        current_resId = current_resId[:current_resId.find('/')] # only take main ressource id
+                        dash_index = current_resId.find('/')
+                        if dash_index!= -1 : current_resId = current_resId[:current_resId.find('/')] # only take main ressource id
                         if current_resId not in resource_syscall_file: resource_syscall_file[current_resId] = {}
                         continue
                     continue
@@ -66,7 +67,8 @@ class TraceHandling:
                         current_resId_left, current_resId_right = line.find('Info: ') + len("Info: "), index - 2
                         current_resId_end = line[current_resId_left:current_resId_right]
                         if current_resId_end[0] == "/": current_resId_end = current_resId_end[1:line.find("/")]
-                        current_resId_end = current_resId_end[:current_resId_end.find('/')] # only take main ressource id
+                        dash_index = current_resId_end.find('/')
+                        if dash_index!= -1 : current_resId_end = current_resId_end[:current_resId_end.find('/')] # only take main ressource id
                         assert current_resId_end == current_resId
                         current_resId = None
                         continue
