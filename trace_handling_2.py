@@ -262,7 +262,11 @@ class TraceHandling:
                             new_path = working_dir+str_params[left_path2 + 3:right_path2-1]
                         file_correspondence[new_path] = ('rename', old_path) # file removed
                     case 'fchdir':
-                        new_root = FD_table[int(str_params[str_params.find('(')+1:str_params.find(')')])][0]
+                        try:
+                            new_root = FD_table[int(str_params[str_params.find('(')+1:str_params.find(')')])][0]
+                        except KeyError as e:
+                            self.logger.info("Trying to change working directory to a file pointer not open or already closed .")
+                            continue
                         while True:
                             if new_root[:2]=='../':
                                 new_root = new_root[2:]
