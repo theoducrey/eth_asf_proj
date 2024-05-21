@@ -104,7 +104,7 @@ class TraceHandling:
                         try:
                             params = ast.literal_eval(str_params)
                         except SyntaxError as e:
-                            self.logger.info(e)
+                            self.logger.info(str(e))
                         executable_path = params[0]
                         executable_args = params[1]
                         executable_vars = params[2]
@@ -129,9 +129,9 @@ class TraceHandling:
                         if mode == 'F_GETFL' or mode == 'F_GETFD':
                             pass
                         elif mode == "FD_CLOEXEC":
-                            self.logger.info(syscall_str)
+                            self.logger.info(str(syscall_str))
                         else:
-                            self.logger.info("Not implemented fcntl", syscall_str)
+                            self.logger.info("Not implemented fcntl : %s" % (str(syscall_str)))
                     case 'getcwd':
                         pass # we don't care TODO don't understand the argument
                     case 'chdir':
@@ -166,7 +166,7 @@ class TraceHandling:
                         left_fd2 = str_params.find(',')
                         fd = int(str_params[1:left_fd2])
                         if fd not in FD_table:
-                            self.logger.info("BIG BuG TO FIx close before write why ????? ", syscall_str)
+                            self.logger.info("BIG BuG TO FIx close before write why ????? %s" % (str(syscall_str)))
                             continue
                         path = FD_table[fd][0]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
@@ -207,7 +207,7 @@ class TraceHandling:
                         fd1 = int(str_params[1:left_fd2])
                         fd2 = int(str_params[left_fd2+1:right_fd2])
                         if fd2 not in FD_table:
-                            self.logger.info("Potential big error in dup2 :", syscall_str)
+                            self.logger.info("Potential big error in dup2 : %s" % (str(syscall_str)))
                             continue
                         FD_table[fd1] = FD_table[fd2]
                     case 'clone':
