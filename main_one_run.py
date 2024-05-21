@@ -36,6 +36,8 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 def main():
     logger = setup_logger("db-module", "output/main.logs")
+    logger_result_state = setup_logger("db-module", "output/result_state.logs")
+    logger_result_dependencies = setup_logger("db-module", "output/result_dependencies.logs")
     parser = argparse.ArgumentParser(
         prog='eth_asf_proj',
         description='What the program does',
@@ -61,8 +63,8 @@ def main():
     target_manifest_graph = ManifestGraph(target_catalog)
     traceHandling = TraceHandling(logger, queue_trace, queue_basic_block_trace_for_mutation, queue_basic_block_trace_for_checker, main_lock, args)  # 2:   queue_trace -> queue_basic_block_trace
     riskyMutationGeneration = RiskyMutationGeneration(logger, queue_basic_block_trace_for_mutation, queue_mutation, main_lock, args)  # 3:   queue_basic_block_trace_for_mutation -> queue_mutation
-    stateChecker = StateChecker(logger, queue_state, main_lock, target_manifest_graph, args)  # 4:     queue_state, manifest_graph -> log
-    traceAnalyzer = TraceAnalyzer(logger, queue_basic_block_trace_for_checker, main_lock, target_manifest_graph, args)  # 5:     queue_basic_block_trace_for_checker, manifest_graph  -> log
+    stateChecker = StateChecker(logger, logger_result_state, queue_state, main_lock, target_manifest_graph, args)  # 4:     queue_state, manifest_graph -> log
+    traceAnalyzer = TraceAnalyzer(logger, logger_result_dependencies, queue_basic_block_trace_for_checker, main_lock, target_manifest_graph, args)  # 5:     queue_basic_block_trace_for_checker, manifest_graph  -> log
 
 
 

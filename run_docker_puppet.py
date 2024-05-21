@@ -55,7 +55,7 @@ syscall_filter = [
 
 
 class SpawnRunPuppet:
-    def __init__(self, logger, queue_mutation, queue_trace, queue_state, main_lock, target_manifest):
+    def __init__(self, logger, queue_mutation, queue_trace, queue_state, main_lock, target_manifest, oneRun=False):
         self.main_lock = main_lock
         self.logger = logger
         self.target_manifest = target_manifest
@@ -68,6 +68,7 @@ class SpawnRunPuppet:
         os.makedirs(os.path.join(os.getcwd(), self.output_dir))
         self.current_id = 0
         self.init_image()
+        self.oneRun = oneRun
 
         manifs_f = open('availible_manifest_param.json')
         data = json.load(manifs_f)
@@ -97,8 +98,9 @@ class SpawnRunPuppet:
         self.logger.info("spawn_run_puppet : processing started")
         while True:
             mutations = self.queue_mutation.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
-            print("Processing new mutation")
             self.process_mutation(mutations)
+            if self.oneRun:
+                break
 
     def process_mutation(self, mutations: list):
         #eg: ("rename", "path_file", "new_name")

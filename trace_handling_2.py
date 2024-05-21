@@ -12,13 +12,14 @@ from collections import defaultdict
 
 
 class TraceHandling:
-    def __init__(self, logger, queue_trace, queue_basic_block_trace_for_mutation, queue_basic_block_trace_for_checker, main_lock, args):
+    def __init__(self, logger, queue_trace, queue_basic_block_trace_for_mutation, queue_basic_block_trace_for_checker, main_lock, args, oneRun=False):
         self.main_lock = main_lock
         self.logger = logger
         self.args = args
         self.queue_trace = queue_trace
         self.queue_basic_block_trace_for_mutation = queue_basic_block_trace_for_mutation
         self.queue_basic_block_trace_for_checker = queue_basic_block_trace_for_checker
+        self.oneRun = oneRun
 
     def process_tracks(self):
         self.logger.info("trace handling : processing started")
@@ -27,6 +28,8 @@ class TraceHandling:
             print("Processing new track")
             trace = self.queue_trace.get()
             self.process_track(trace)
+            if self.oneRun:
+                break
 
 
 
