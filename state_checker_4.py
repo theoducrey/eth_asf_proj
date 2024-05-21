@@ -27,7 +27,7 @@ class StateChecker:
 
         self.state_accumulator.append(state)
 
-        self.result_logger.info(str(differences))
+        self.logger_result.info(str(differences))
 
     def compare_states(self, state1, state2):
         both_have = [] # both have these edges

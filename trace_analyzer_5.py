@@ -22,7 +22,7 @@ class TraceAnalyzer:
             if self.oneRun:
                 break
 
-    def process_block_trace(self, mgraph: ManifestGraph, trace_temp):
+    def process_block_trace(self, trace_temp):
         trace_old = trace_temp[1][0]
         trace = {}
         #print(trace_old)
@@ -58,7 +58,7 @@ class TraceAnalyzer:
         missing_dependencies = []
         for i in relations:
             for j in relations[i]:
-                if mgraph.edge_res1_res2(i, j) != "B":
+                if self.manifest_graph.edge_res1_res2(i, j) != "B":
                     missing_dependencies.append([i, j])
-        self.result_logger.info(str(missing_dependencies))
+        self.logger_result.info(str(missing_dependencies))
 
