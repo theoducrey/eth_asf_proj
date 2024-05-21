@@ -27,18 +27,13 @@ class TraceAnalyzer:
         trace = {}
         #print(trace_old)
         for i in trace_old:
-            i_new = ""
-            if i[0] == "/":
-                i_new = i[1:]
-            else:
-                i_new = i
-            trace[i_new] = {}
+            trace[i] = {}
             for j in trace_old[i]:
                 for k in trace_old[i][j]:
-                    if i_new not in trace or k not in trace[i_new]:
-                        trace[i_new][k] = {j}
+                    if i not in trace or k not in trace[i]:
+                        trace[i][k] = {j}
                     else:
-                        trace[i_new][k].add(j)
+                        trace[i][k].add(j)
 
         #Directy log the result using the result logger
         before_after = [['accessed', 'remove'],["accessed", "accessed"]] # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
