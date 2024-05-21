@@ -86,7 +86,7 @@ class SpawnRunPuppet:
 
     def get_target_catalog(self):
         print("getting target catalog")
-        self.run_puppet_manifest_from_name([], self.current_id)
+        self.run_puppet_manifest_from_name([], self.current_id, [])
         print("target catalog getted ")
         search_dir = self.output_dir + str(self.current_id)+"/"
         with open(search_dir+"puppet_catalog.json") as json_file:
