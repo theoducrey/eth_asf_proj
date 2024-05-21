@@ -59,7 +59,7 @@ class RiskyMutationGeneration:
                 if 'create' in self.mutation_already_generated[file]: w_create=0
                 if w_delete + w_rename + w_create == 0: continue
 
-                randomOperation = random.choices(['delete', 'rename', 'create'], weights=(w_delete, w_rename, w_create))
+                randomOperation = random.choices(['delete', 'rename', 'create'], weights=(w_delete, w_rename, w_create))[0]
 
 
                 self.mutation_already_generated[file].append(randomOperation)

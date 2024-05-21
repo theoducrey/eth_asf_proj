@@ -113,6 +113,7 @@ class SpawnRunPuppet:
         #eg: ("rename", "path_file", "new_name")
 
         mutations_commands = []
+        mutations = mutations[1]
         for mut in mutations:
             match mut[0]:
                 case "rename":

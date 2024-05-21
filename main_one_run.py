@@ -35,9 +35,9 @@ def setup_logger(name, log_file, level=logging.INFO):
     return logger
 
 def main():
-    logger = setup_logger("db-module", "output/main.logs")
-    logger_result_state = setup_logger("db-module", "output/result_state.logs")
-    logger_result_dependencies = setup_logger("db-module", "output/result_dependencies.logs")
+    logger = setup_logger("main", "output/main.logs")
+    logger_result_state = setup_logger("result-state", "output/result_state.logs")
+    logger_result_dependencies = setup_logger("result-dependencies", "output/result_dependencies.logs")
     parser = argparse.ArgumentParser(
         prog='eth_asf_proj',
         description='What the program does',
@@ -73,7 +73,7 @@ def main():
 
 
 
-    queue_mutation.put([]) #initialize the pipeline by running a first time without mutation
+    queue_mutation.put((0,[])) #initialize the pipeline by running a first time without mutation
     spawnRunPuppet.process_mutation_queue()
     #queue_trace.put((1, 'output/java_2024-05-21_14-11-19/1', 'java'))
     traceHandling.process_tracks()
