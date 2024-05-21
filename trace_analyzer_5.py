@@ -23,7 +23,7 @@ class TraceAnalyzer:
                 break
 
     def process_block_trace(self, trace_temp):
-        trace_old = trace_temp[1][0]
+        trace_old = trace_temp[1]
         trace = {}
         #print(trace_old)
         for i in trace_old:

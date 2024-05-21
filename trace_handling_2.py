@@ -245,8 +245,8 @@ class TraceHandling:
             resource_syscall_file[resId] = {k if k not in file_correspondence.keys() else file_correspondence[k][1]: v for k, v in resource_syscall_file[resId].items()}
 
         #return (trace_id, resource_syscall_file)
-        self.queue_basic_block_trace_for_mutation.put((trace_id, (resource_syscall_file, file_correspondence)))
-        self.queue_basic_block_trace_for_checker.put((trace_id, (resource_syscall_file, file_correspondence)))
+        self.queue_basic_block_trace_for_mutation.put((trace_id, resource_syscall_file))
+        self.queue_basic_block_trace_for_checker.put((trace_id, resource_syscall_file))
 
 
 #traceHandling = TraceHandling(None, None, None, None, None)
