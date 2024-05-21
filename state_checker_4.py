@@ -52,15 +52,18 @@ class StateChecker:
         edges = []
         queue = []
         curr_count = 1
+        actual_count = 1
         queue.append(original_dir)
         for i in directory:
             queue.append(i[-1][:-1])
-            if len(i) <= curr_count:
+            if len(i) <= actual_count:
                 for j in range(curr_count-len(i)+1):
                     queue.pop(len(queue)-2)
             edges.append([queue[-2],queue[-1]])
-            if curr_count < len(i):
+            if actual_count < len(i):
                 curr_count += 1
+                actual_count = len(i)
             else:
                 curr_count = len(i)
+                actual_count = curr_count
         return state
