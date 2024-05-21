@@ -4,5 +4,6 @@ FROM puppet/puppetserver
 #ENV FLASK_RUN_HOST=0.0.0.0
 RUN apt-get update && apt upgrade -y
 RUN apt-get install -y \
-    strace, tree
+    strace\
+    tree
 EXPOSE 8140
