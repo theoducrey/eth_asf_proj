@@ -261,7 +261,7 @@ class TraceHandling:
                             new_path = str_params[left_path2 + 3:right_path2-1]
                         file_correspondence[working_dir+new_path] = ('rename', working_dir+old_path) # file removed
                     case 'fchdir':
-                        working_dir = working_dir+FD_table[int(str_params[str_params.find('(')+1:str_params.find(')')])][0]
+                        working_dir = working_dir+FD_table[int(str_params[str_params.find('(')+1:str_params.find(')')])][0]+'/'
                         continue # this may need to be implemented in the future version
                     case _:
                         if (syscall_str[:len('+++ exited with ')] == '+++ exited with '
