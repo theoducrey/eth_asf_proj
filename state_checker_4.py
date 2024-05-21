@@ -13,16 +13,18 @@ class StateChecker:
             state = self.queue_state.get() #every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
             self.process_state(state)
 
-    def process_state(self, state):
+
+    def process_state(self, state_info):
         #TODO compare state with past states
         differences = [] # each list in this list corresponds to differences between states for each saved state
-        state = self.convert_to_state_graph(state[1])
+        state = self.convert_to_state_graph(state_info[1])
         for i in self.state_accumulator:
-            differences = self.compare_states(state, i)
+            differences.append(self.compare_states(state, i))
 
         self.state_accumulator.append(state)
 
-        pass
+        with open(state_info[1]+ "/differences.txt", "w") as f:
+            f.write(differences)
 
     def compare_states(self, state1, state2):
         both_have = [] # both have these edges
