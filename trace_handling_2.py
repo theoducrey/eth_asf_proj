@@ -12,12 +12,13 @@ from collections import defaultdict
 
 
 class TraceHandling:
-    def __init__(self, logger, queue_trace, queue_basic_block_trace, main_lock, args):
+    def __init__(self, logger, queue_trace, queue_basic_block_trace_for_mutation, queue_basic_block_trace_for_checker, main_lock, args):
         self.main_lock = main_lock
         self.logger = logger
         self.args = args
         self.queue_trace = queue_trace
-        self.queue_basic_block_trace = queue_basic_block_trace
+        self.queue_basic_block_trace_for_mutation = queue_basic_block_trace_for_mutation
+        self.queue_basic_block_trace_for_checker = queue_basic_block_trace_for_checker
 
     def process_tracks(self):
         self.logger.info("trace handling : processing started")
@@ -234,24 +235,25 @@ class TraceHandling:
         for resId in resource_syscall_file:
             resource_syscall_file[resId] = {k if k not in file_correspondence.keys() else file_correspondence[k][1]: v for k, v in resource_syscall_file[resId].items()}
 
-        return (trace_id, resource_syscall_file)
-        #self.queue_basic_block_trace.put((trace_id, (resource_syscall_file, file_correspondence)))
+        #return (trace_id, resource_syscall_file)
+        self.queue_basic_block_trace_for_mutation.put((trace_id, (resource_syscall_file, file_correspondence)))
+        self.queue_basic_block_trace_for_checker.put((trace_id, (resource_syscall_file, file_correspondence)))
 
 
-traceHandling = TraceHandling(None, None, None, None, None)
-trace_basic = traceHandling.process_track((0, "output/java_2024-05-20_10-18-27/0", None))
+#traceHandling = TraceHandling(None, None, None, None, None)
+#trace_basic = traceHandling.process_track((0, "output/java_2024-05-20_10-18-27/0", None))
 
 
-search_dir = "output/java_2024-05-20_10-18-27/0"+"/"
-with open(search_dir+"puppet_catalog.json") as json_file:
-    json_file.readline()
-    catalog_json = "java",json.load(json_file)
+#search_dir = "output/java_2024-05-20_10-18-27/0"+"/"
+#with open(search_dir+"puppet_catalog.json") as json_file:
+#    json_file.readline()
+#    catalog_json = "java",json.load(json_file)
     #print(catalog_json)
-manifest = ManifestGraph(catalog_json)
+#manifest = ManifestGraph(catalog_json)
 
 
 #traceAnalyzer = TraceAnalyzer(None, None, None, None, None)
 #traceAnalyzer.process_block_trace(manifest, trace_basic)
 
-riskyMutationGeneration = RiskyMutationGeneration(None, Queue(), Queue(), None, None)
-riskyMutationGeneration.process_block_trace(trace_basic)
+#riskyMutationGeneration = RiskyMutationGeneration(None, Queue(), Queue(), None, None)
+#riskyMutationGeneration.process_block_trace(trace_basic)
