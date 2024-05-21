@@ -130,14 +130,14 @@ class SpawnRunPuppet:
                     raise NotImplemented
 
 
-        self.run_puppet_manifest_from_name(mutations_commands, self.current_id)
+        self.run_puppet_manifest_from_name(mutations_commands, self.current_id, mutations)
         local_output_dir = self.output_dir + str(self.current_id)
         self.queue_trace.put((self.current_id, local_output_dir, self.target_manifest))
         self.queue_state.put((self.current_id, local_output_dir))
         self.current_id += 1
 
 
-    def run_puppet_manifest_from_name(self, mutations_commands, processing_id):
+    def run_puppet_manifest_from_name(self, mutations_commands, processing_id, mutations):
         local_output_dir = self.output_dir + str(processing_id) + "/"
         os.makedirs(os.path.join(os.getcwd(), local_output_dir))
         with open(local_output_dir + "terminal.log", "a") as output:
@@ -170,8 +170,8 @@ class SpawnRunPuppet:
                 subprocess.call(command, shell=True, stdout=output, stderr=output)
 
         if not os.path.exists(local_output_dir + "puppet_catalog.log") or not os.path.exists(local_output_dir + "strace_output.txt"):
-            self.logger_result_state.info("Run of puppet manifest crash with mutation :")
-            self.logger_result_dependencies.info("Run of puppet manifest crash with mutation :")
+            self.logger_result_state.info("Run of puppet manifest crash with mutation : %s" % (str(mutations)))
+            self.logger_result_dependencies.info("Run of puppet manifest crash with mutation : %s" % (str(mutations)))
 
 
 
