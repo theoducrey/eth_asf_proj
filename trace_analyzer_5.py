@@ -55,5 +55,5 @@ class TraceAnalyzer:
             for j in relations[i]:
                 if self.manifest_graph.edge_res1_res2(i, j) != "B":
                     missing_dependencies.append([i, j])
-        self.logger_result.info(str(missing_dependencies))
+        self.logger_result.info("missing dependencies " + str(trace_temp[0]) + ": " + str(missing_dependencies))
 
