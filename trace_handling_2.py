@@ -104,7 +104,7 @@ class TraceHandling:
                         try:
                             params = ast.literal_eval(str_params)
                         except SyntaxError as e:
-                            print(e)
+                            self.logger.info(e)
                         executable_path = params[0]
                         executable_args = params[1]
                         executable_vars = params[2]
@@ -129,9 +129,9 @@ class TraceHandling:
                         if mode == 'F_GETFL' or mode == 'F_GETFD':
                             pass
                         elif mode == "FD_CLOEXEC":
-                            print(syscall_str)
+                            self.logger.info(syscall_str)
                         else:
-                            print("Not implemented fcntl", syscall_str)
+                            self.logger.info("Not implemented fcntl", syscall_str)
                     case 'getcwd':
                         pass # we don't care TODO don't understand the argument
                     case 'chdir':
@@ -158,7 +158,7 @@ class TraceHandling:
                         link_path = str_params.split(',')[0][2:-1]
                         target_path = str_params.split(',')[0][2:-1]
                         if link_path in file_correspondence:
-                            print("overriding symbolic link probably shoudn't be done")
+                            self.logger.info("overriding symbolic link probably shoudn't be done")
                         file_correspondence[link_path] =('link', target_path)
                     case 'chown':
                         pass #TOOD don't perhaps later for mutations
@@ -166,7 +166,7 @@ class TraceHandling:
                         left_fd2 = str_params.find(',')
                         fd = int(str_params[1:left_fd2])
                         if fd not in FD_table:
-                            print("BIG BuG TO FIx close before write why ????? ", syscall_str)
+                            self.logger.info("BIG BuG TO FIx close before write why ????? ", syscall_str)
                             continue
                         path = FD_table[fd][0]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
@@ -199,14 +199,15 @@ class TraceHandling:
                         left_fd_output = str_params.find(',')
                         fd = int(str_params[1:left_fd_output])
                         if fd != 1: # print to stdout are ignore because thread safe
-                            print("Write syscall are not tacken into account with the current version of the testing pipeline")
+                            self.logger.info("Write syscall are not tacken into account with the current version of the testing pipeline")
+                            continue
                             #raise NotImplemented
                     case 'dup2': #TODO not sure if correct but I inversed the order of the arg from the man page
                         left_fd2, right_fd2 = str_params.find(','), str_params.find(')')
                         fd1 = int(str_params[1:left_fd2])
                         fd2 = int(str_params[left_fd2+1:right_fd2])
                         if fd2 not in FD_table:
-                            print("Potential big error in dup2 :", syscall_str)
+                            self.logger.info("Potential big error in dup2 :", syscall_str)
                             continue
                         FD_table[fd1] = FD_table[fd2]
                     case 'clone':
