@@ -1,5 +1,5 @@
 class StateChecker:
-    def __init__(self, logger, queue_state, main_lock, puppet_manifest, args, oneRun=False):
+    def __init__(self, logger, logger_result, queue_state, main_lock, puppet_manifest, args, oneRun=False):
         self.main_lock = main_lock
         self.logger = logger
         self.puppet_manifest = puppet_manifest
@@ -7,6 +7,7 @@ class StateChecker:
         self.queue_state = queue_state
         self.state_accumulator = []
         self.oneRun = oneRun
+        self.logger_result = logger_result
 
     def process_state_queue(self):
         self.logger.info("spawn_run_puppet : processing started")

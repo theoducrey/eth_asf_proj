@@ -1,6 +1,6 @@
 from manifestGraph import ManifestGraph
 class TraceAnalyzer:
-    def __init__(self, logger, queue_basic_block_trace, main_lock, manifest_graph, args, oneRun=False):
+    def __init__(self, logger, logger_result, queue_basic_block_trace, main_lock, manifest_graph, args, oneRun=False):
         self.main_lock = main_lock
         self.logger = logger
         self.result_logger = logger
@@ -8,6 +8,7 @@ class TraceAnalyzer:
         self.args = args
         self.queue_basic_block_trace = queue_basic_block_trace
         self.oneRun = oneRun
+        self.logger_result = logger_result
 
 
 
