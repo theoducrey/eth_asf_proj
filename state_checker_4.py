@@ -45,24 +45,18 @@ class StateChecker:
             state = f.readlines()
         directory = []
         for i in state:
-            temp = i.split(" ")
+            temp = i.split("--")
             directory.append(temp)
         directory = directory[1:-2]
         edges = []
         queue = []
-        curr_count = 1
-        actual_count = 1
+        curr_count = 0
         queue.append(original_dir)
         for i in directory:
-            queue.append(i[-1][:-1])
-            if len(i) <= actual_count:
-                for j in range(curr_count-len(i)+1):
+            queue.append(i[-1][1:-1])
+            if (len(i[0])-1)//4+1 <= curr_count:
+                for j in range(curr_count-(len(i[0])-1)//4+2):
                     queue.pop(len(queue)-2)
             edges.append([queue[-2],queue[-1]])
-            if actual_count < len(i):
-                curr_count += 1
-                actual_count = len(i)
-            else:
-                curr_count = len(i)
-                actual_count = curr_count
+            curr_count =(len(i[0])-1)//4+1
         return edges
