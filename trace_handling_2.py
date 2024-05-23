@@ -213,7 +213,7 @@ class TraceHandling:
                         path = working_dir+str_params.split(',')[0][1:]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][
                             path] = set()
-                        resource_syscall_file[current_resId][path].add('create_dir')  # file removed
+                        resource_syscall_file[current_resId][path].add('create')  # file removed
                     case 'writev':
                         left_fd_output = str_params.find(',')
                         fd = int(str_params[1:left_fd_output])

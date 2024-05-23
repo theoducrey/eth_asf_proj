@@ -1,7 +1,7 @@
 {
   "java" : {"name": "java", "manifest_content":  "include java", "module_name":  "puppetlabs-java", "version": "11.0.0", "running": true },
   "stdlib" : {"name": "stdlib", "manifest_content":  "include stdlib", "module_name":  "puppetlabs-stdlib", "version": "9.6.0", "running": true},
-  "apt" : {"name": "apt", "manifest_content":  "include apt", "module_name":  "puppetlabs-apt", "version": "9.4.0"},
+  "apt" : {"name": "apt", "manifest_content":  "include apt", "module_name":  "puppetlabs-apt", "version": "9.4.0", "running": true},
   "lvm" : {"name": "lvm", "manifest_content":  "include ntp", "module_name":  "puppetlabs-ntp", "version": "10.1.0"},
   "motd" : {"name": "motd", "manifest_content":  "include motd", "module_name":  "puppetlabs-motd", "version": "7.1.0"},
   "" : {"name": "", "manifest_content":  "include ", "module_name":  "", "version": ""},

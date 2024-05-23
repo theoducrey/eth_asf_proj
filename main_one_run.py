@@ -43,7 +43,7 @@ def main():
         prog='eth_asf_proj',
         description='What the program does',
         epilog='Text at the bottom of help')
-    parser.add_argument('-tm', '--target_manifest', help='The exact path from the root of the project to the puppet manifest', default="apt")
+    parser.add_argument('-tm', '--target_manifest', help='The exact path from the root of the project to the puppet manifest', default="java")
     parser.add_argument('-nr', '--number_run', help='The exact path from the root of the project to the puppet manifest', default=10)
     args = parser.parse_args()
     main_lock = Lock()
