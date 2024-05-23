@@ -23,9 +23,7 @@ class TraceHandling:
 
     def process_tracks(self):
         self.logger.info("trace handling : processing started")
-        print("Processing new track")
         while True:
-            print("Processing new track")
             trace = self.queue_trace.get()
             self.process_track(trace)
             if self.oneRun:
@@ -38,6 +36,16 @@ class TraceHandling:
         trace_dir = trace[1]
         trace_target_manifest = trace[2]
         file_accessed = {}  # file_path : [consumed/produced/expunged,...]
+
+
+        if not os.path.exists(trace_dir + "/strace_output.txt"):
+            self.queue_basic_block_trace_for_mutation.put((trace_id, RuntimeError))
+            self.queue_basic_block_trace_for_checker.put((trace_id, RuntimeError))
+            return
+
+
+
+
         buffer = defaultdict(list)
 
 
@@ -181,6 +189,8 @@ class TraceHandling:
                         resource_syscall_file[current_resId][path].add('remove')
                     case 'chmod':
                         pass  #TOOD don't perhaps later for mutations
+                    case 'fchmodat':
+                        pass  #TOOD don't perhaps later for mutations
                     case 'rename':
                         pass #TODO don't understand the argument
                         left_path2 = str_params.find(',')
@@ -218,6 +228,14 @@ class TraceHandling:
                             self.logger.info("Potential big error in dup2 : %s" % (str(syscall_str)))
                             continue
                         FD_table[fd1] = FD_table[fd2]
+                    case 'dup':
+                        right_old_fd =  str_params.find(')')
+                        old_fd = int(str_params[1:right_old_fd])
+                        new_fd = int(syscall_ret[2:])
+                        if old_fd not in FD_table:
+                            self.logger.info("Potential big error in dup2 : %s" % (str(syscall_str)))
+                            continue
+                        FD_table[new_fd] = FD_table[old_fd]
                     case 'clone':
                         pass # don't care
                     case 'unlinkat':
@@ -282,12 +300,16 @@ class TraceHandling:
 
                         continue # this may need to be implemented in the future version
                     case _:
-                        if (syscall_str[:len('+++ exited with ')] == '+++ exited with '
-                            or syscall_str[:11] == '--- SIGCHLD' or
-                                syscall_str[:11] == '--- SIGINT '):
+                        if (
+                                syscall_str[:len('+++ exited with ')] == '+++ exited with ' or
+                                syscall_str[:11] == '--- SIGCHLD' or
+                                syscall_str[:11] == '--- SIGINT ' or
+                                syscall_str[:11] == '--- SIGSEGV' or
+                                syscall_str == '+++ killed by SIGINT +++'
+                        ):
                             pass
                         else:
-                            print(syscall_name, end=')\n')
+                            print(syscall_name, end='----Line from state that wasn t understood\n')
 
         for resId in resource_syscall_file:
             resource_syscall_file[resId] = {k if k not in file_correspondence.keys() else file_correspondence[k][1]: v for k, v in resource_syscall_file[resId].items()}

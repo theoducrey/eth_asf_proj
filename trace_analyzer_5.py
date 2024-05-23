@@ -23,6 +23,11 @@ class TraceAnalyzer:
                 break
 
     def process_block_trace(self, trace_temp):
+        if trace_temp[1] == RuntimeError:  # The manifest failed to run so no need to test the dependencies
+            self.logger_result.info("Run of puppet manifest crash with mutation : ")
+            return
+
+
         trace_old = trace_temp[1]
         trace = {}
         #print(trace_old)

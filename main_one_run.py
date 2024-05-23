@@ -42,7 +42,8 @@ def main():
         prog='eth_asf_proj',
         description='What the program does',
         epilog='Text at the bottom of help')
-    parser.add_argument('-m', '--puppet_manifest', help='The exact path from the root of the project to the puppet manifest')
+    parser.add_argument('-tm', '--target_manifest', help='The exact path from the root of the project to the puppet manifest', default="apt")
+    parser.add_argument('-nr', '--number_run', help='The exact path from the root of the project to the puppet manifest', default=10)
     args = parser.parse_args()
     main_lock = Lock()
 
@@ -54,8 +55,12 @@ def main():
 
 
 
-    target_manifest = "java"
+    target_manifest = args.target_manifest
+    nbr_mutation = args.number_run
     logger.info("main started")
+
+
+    print("Main started performing testing on %s manifest for %s iterations" % (target_manifest, nbr_mutation))
 
     #input -> output
     spawnRunPuppet = SpawnRunPuppet(logger, logger_result_state, logger_result_dependencies,  queue_mutation, queue_trace, queue_state, main_lock, target_manifest, oneRun=True) # 1: queue_mutation -> queue_trace
@@ -70,12 +75,11 @@ def main():
 
     queue_mutation.put((0,[])) #initialize the pipeline by running a first time without mutation
     spawnRunPuppet.process_mutation_queue()
-    #queue_trace.put((1, 'output/java_2024-05-21_14-11-19/1', 'java'))
     traceHandling.process_tracks()
     stateChecker.process_state_queue()
     traceAnalyzer.process_basic_block_trace_queue()
 
-    for i in range(10):
+    for i in range(nbr_mutation):
         riskyMutationGeneration.process_basic_block_trace_queue()
         if queue_mutation.qsize()==0:
             break # if all mutation were explored before the max number iteration just stop
@@ -84,9 +88,9 @@ def main():
         stateChecker.process_state_queue()
         traceAnalyzer.process_basic_block_trace_queue()
 
+
+    process_final_output()
+
+
 if __name__ == '__main__':
     main()
-
-
-
-

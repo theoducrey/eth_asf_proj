@@ -22,6 +22,11 @@ class StateChecker:
         #TODO compare state with past states
         differences = [] # each list in this list corresponds to differences between states for each saved state
         state = self.convert_to_state_graph(state_info[1])
+
+        if state_info[1]==RuntimeError: # The manifest failed to run so no need to test the state reconciliation
+            self.logger_result.info("Run of puppet manifest crash with mutation : ")#%s" % (str(mutations)))
+            return
+
         for i in self.state_accumulator:
             differences.append(self.compare_states(state, i))
 
