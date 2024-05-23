@@ -57,6 +57,7 @@ class StateChecker:
             if (len(i[0])-1)//4+1 <= curr_count:
                 for j in range(curr_count-(len(i[0])-1)//4):
                     queue.pop(len(queue)-2)
-            edges.append([queue[-2],queue[-1]])
+            if " -> " not in queue[-1] and "." in queue[-1]:
+                edges.append([queue[-2],queue[-1]])
             curr_count =(len(i[0])-1)//4+1
         return edges
