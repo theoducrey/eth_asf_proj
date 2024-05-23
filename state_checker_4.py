@@ -1,3 +1,6 @@
+import os
+
+
 class StateChecker:
     def __init__(self, logger, logger_result, queue_state, main_lock, puppet_manifest, args, oneRun=False):
         self.main_lock = main_lock
@@ -13,6 +16,7 @@ class StateChecker:
         self.logger.info("spawn_run_puppet : processing started")
         while True:
             state = self.queue_state.get() #every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
+            print("process_state_queue")
             self.process_state(state)
             if self.oneRun:
                 break
@@ -21,11 +25,14 @@ class StateChecker:
     def process_state(self, state_info):
         #TODO compare state with past states
         differences = [] # each list in this list corresponds to differences between states for each saved state
-        state = self.convert_to_state_graph(state_info[1])
 
-        if state_info[1]==RuntimeError: # The manifest failed to run so no need to test the state reconciliation
+        if not os.path.exists(state_info[1] + "/state.txt"): # The manifest failed to run so no need to test the state reconciliation
             self.logger_result.info("Run of puppet manifest crash with mutation : ")#%s" % (str(mutations)))
             return
+
+        state = self.convert_to_state_graph(state_info[1])
+
+
 
         for i in self.state_accumulator:
             differences.append(self.compare_states(state, i))

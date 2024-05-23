@@ -25,6 +25,7 @@ class TraceHandling:
         self.logger.info("trace handling : processing started")
         while True:
             trace = self.queue_trace.get()
+            print("process_tracks")
             self.process_track(trace)
             if self.oneRun:
                 break

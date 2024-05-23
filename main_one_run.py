@@ -83,15 +83,15 @@ def main():
     for i in range(nbr_mutation):
         riskyMutationGeneration.process_basic_block_trace_queue()
         if queue_mutation.qsize()==0:
+            print("FINISHED RUNNING ALL MUTATION WITH NEW FILES TO EXPLORE")
             break # if all mutation were explored before the max number iteration just stop
         spawnRunPuppet.process_mutation_queue()
         traceHandling.process_tracks()
         stateChecker.process_state_queue()
         traceAnalyzer.process_basic_block_trace_queue()
+    print("FINISH RUNNING THE ITERATIONS -> processing the output")
     final_print()
-
-
-    process_final_output()
+    print("OUTPUT SAVED")
 
 
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ class TraceAnalyzer:
         self.logger.info("TraceAnalyzer : processing started")
         while True:
             block_trace = self.queue_basic_block_trace.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
+            print("process_basic_block_trace_queue")
             self.process_block_trace(block_trace)
             if self.oneRun:
                 break

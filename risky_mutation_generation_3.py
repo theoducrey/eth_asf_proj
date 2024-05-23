@@ -17,6 +17,7 @@ class RiskyMutationGeneration:
         self.logger.info("spawn_run_puppet : processing started")
         while True:
             block_trace = self.queue_basic_block_trace.get()  # every mutation is a sequence of operation to be applied together before running the puppet manifest on the fresh image
+            print("process_basic_block_trace_queue")
             self.process_block_trace(block_trace)
             if self.oneRun:
                 break
@@ -25,6 +26,10 @@ class RiskyMutationGeneration:
 
         block_trace_id = block_trace[0]
         block_trace_data = block_trace[1]
+
+        if block_trace_data == RuntimeError:  # The manifest failed to run so not possible to generate mutation
+            self.logger.info("Run of puppet manifest crash with mutation  so no mutation could be generated")
+            return
 
         #new_mutations_run = []
 
