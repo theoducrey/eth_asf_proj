@@ -10,6 +10,7 @@ from run_docker_puppet import SpawnRunPuppet
 from state_checker_4 import StateChecker
 from trace_analyzer_5 import TraceAnalyzer
 from trace_handling_2 import TraceHandling
+from out_put import final_print
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 def setup_logger(name, log_file, level=logging.INFO):
@@ -81,6 +82,7 @@ def main():
         traceHandling.process_tracks()
         stateChecker.process_state_queue()
         traceAnalyzer.process_basic_block_trace_queue()
+    final_print()
 
 if __name__ == '__main__':
     main()
