@@ -35,7 +35,7 @@ def final_print():
             j = i.split("state differences")[1][2:-2]
             while j[0] != ":":
                 j = j[1:]
-            j = j[3:0]
+            j = j[3:]
             j = j.split(", ")
             for k in range(len(j)//2):
                 t1 = j[k*2][2:-1]
