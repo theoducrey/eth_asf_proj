@@ -31,7 +31,8 @@ class TraceAnalyzer:
 
         trace_old = trace_temp[1]
         trace = {}
-        #print(trace_old)
+        # this part is responsible for flipping the received dictionary to have each reasource have operations with sets of locations
+        # instead of each resource having locations with sets of operations performed on them.
         for i in trace_old:
             trace[i] = {}
             for j in trace_old[i]:
@@ -44,8 +45,10 @@ class TraceAnalyzer:
         #Directy log the result using the result logger
         # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
         before_after = [['accessed', 'remove'], ['write', 'remove'], ['create', 'accessed'], ['create', 'rename'], ['create', 'write'], ['create', 'remove']] # real dependencies
-        # create -> open check
         relations = {}
+        # checks if each realation in the list "before_after" is fulfilled for each location
+        # that means if one resource creates a file and another resource opens that file, the resource that creates should have happened before
+        # so these relations get saved into the "relations" dictionary
         for relation in before_after:
             for i in trace:
                 if relation[0] in trace[i]:
@@ -56,10 +59,11 @@ class TraceAnalyzer:
                                     if i not in relations:
                                         relations[i] = {}
                                     relations[i][k] = 0
+        # here we compare these relationships we inferred from the basic block trace to the manifest graph
         missing_dependencies = []
         for i in relations:
             for j in relations[i]:
-                if self.manifest_graph.edge_res1_res2(i, j) != "B":
-                    missing_dependencies.append([i, j])
+                if self.manifest_graph.edge_res1_res2(i, j) != "B": # we request to know if in the manifest graph(tree) i has a path to j
+                    missing_dependencies.append([i, j]) # if it doesn't, we save it.
         self.logger_result.info("missing dependencies " + str(trace_temp[0]) + ": " + str(missing_dependencies))
 
