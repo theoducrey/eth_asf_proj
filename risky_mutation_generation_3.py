@@ -31,19 +31,18 @@ class RiskyMutationGeneration:
             self.logger.info("Run of puppet manifest crash with mutation  so no mutation could be generated")
             return
 
-        #new_mutations_run = []
-
+        # the mutation generation process is independent between resource and apply to each of them
         for ressourceId, files_access in block_trace_data.items():
-            if len(files_access) <= 0: continue
+            if len(files_access) <= 0: continue # no file touch by the manifest so no mutation needed
             new_mutations = [] #elem = (#operation, file,)
 
-            set_threshold_pourcentage = int(len(files_access) * simultaneous_max_mutations_nbr)
+            set_threshold_pourcentage = int(len(files_access) * simultaneous_max_mutations_nbr) # correspond to the number of mutation included in a subset of proportion simultaneous_max_mutations_nbr by default correspond to 20% of the original set
             max_subset_size = min(max(set_threshold_pourcentage, 3),
-                                  len(files_access))  # max between 3 and 20% but restricted to the size of the upper set
-            subset_size = random.randint(1, max_subset_size)
+                                  len(files_access))  # max between 3 and 20% but restricted to the size of the upper set, we don't want to have a set of mutation smaller than 3 but still constrains it to the total size of the main set of files
+            subset_size = random.randint(1, max_subset_size) # randomly define how big the set f mutation will be still futher restricted by a proba of 70% below
 
-            subset_targeted_file = random.sample(list(files_access.items()), subset_size)
-            for file, access_type in subset_targeted_file:
+            subset_targeted_file = random.sample(list(files_access.items()), subset_size) # sample the actual set of file which will be targeted by the mutation
+            for file, access_type in subset_targeted_file: # for each file targeted define all possible mutation possible depending on there use by puppet, make it also easy to change priority of each mutation
                 w_delete, w_rename, w_create = 0, 0, 0
                 if 'execute' in access_type: w_delete += 1; w_rename += 1; w_create += 0
                 if 'remove' in access_type: w_delete += 1; w_rename += 1; w_create += 1
@@ -59,20 +58,21 @@ class RiskyMutationGeneration:
                 if random.random() < 7./10 : continue
 
                 # may be remove in future version to explore more possible bug interaction
-                if 'delete' in self.mutation_already_generated[file]: w_delete=0
-                if 'rename' in self.mutation_already_generated[file]: w_rename=0
-                if 'create' in self.mutation_already_generated[file]: w_create=0
+                if 'delete' in self.mutation_already_generated[file]: w_delete=0 # only delete the file one time though all the run
+                if 'rename' in self.mutation_already_generated[file]: w_rename=0 # only rename the file one time though all the run
+                if 'create' in self.mutation_already_generated[file]: w_create=0 # only create the file one time though all the run
                 if w_delete + w_rename + w_create == 0: continue
 
+                # choose at random the mutation according to the weights
                 randomOperation = random.choices(['delete', 'rename', 'create'], weights=(w_delete, w_rename, w_create))[0]
-
 
                 self.mutation_already_generated[file].append(randomOperation)
 
+                # some mutation require futher param
                 arg2 = None
                 match randomOperation:
                     case "rename":
-                        arg2 = ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
+                        arg2 = ''.join(random.choice(string.ascii_lowercase) for _ in range(10)) # give the new name of the file
                     case "delete":
                         pass
                     case "create":
@@ -85,5 +85,3 @@ class RiskyMutationGeneration:
                 print("Ressource %s completely explored for run : %s" % (ressourceId, block_trace_id))
                 continue
             self.queue_mutation.put((block_trace_id, new_mutations))
-
-        #  check for missing Notifiers -> does it change the state

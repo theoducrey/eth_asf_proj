@@ -35,53 +35,44 @@ class TraceHandling:
     def process_track(self, trace):
         trace_id = trace[0]
         trace_dir = trace[1]
-        trace_target_manifest = trace[2]
-        file_accessed = {}  # file_path : [consumed/produced/expunged,...]
+        #trace_target_manifest = trace[2]
+        #file_accessed = {}  # file_path : [consumed/produced/expunged,...]
 
-
-        if not os.path.exists(trace_dir + "/strace_output.txt"):
+        if not os.path.exists(trace_dir + "/strace_output.txt"): # handle where the manifest run wasn't succesful and crash in this case the trace is basically RuntimeError
             self.queue_basic_block_trace_for_mutation.put((trace_id, RuntimeError))
             self.queue_basic_block_trace_for_checker.put((trace_id, RuntimeError))
             return
 
+        buffer = defaultdict(list) # save the unfinished syscall
 
-
-
-        buffer = defaultdict(list)
-
-
-
-
-        #symbolic_link = {}
-        FD_table = {0:('stdin',[]), 1:('stdout',[]), 2:('stderr',[])}
-        working_dir = ''
-        resource_syscall_file = {}
-        file_correspondence = dict() # list of pair then at the end fusion by looping on every path to replace them with the renamed one, we don't care about timeline because we are checking for resilience against timeline change
+        FD_table = {0:('stdin',[]), 1:('stdout',[]), 2:('stderr',[])} # by default a system start with this triple of pipe
+        working_dir = '' # handle the change of base directory for the paths retrieved
+        resource_syscall_file = {} # end return value, save all files accessed by each resource and the operations performed on them
+        file_correspondence = dict() # list of pair renaming and linking then at the end fusion the pair by looping on every path to replace them with the renamed one, we don't care about timeline because we are checking for resilience against resource reordering
         with open(trace_dir + "/strace_output.txt", "r") as f:
             current_resId = None
-            for line in f.readlines():
+            for line in f.readlines(): # for each line in the trace
                 line = line.strip()
-
-                if current_resId is None:
+                if current_resId is None: # if not inside the block of one of the ressource, search for the puppet debugging print indicating the start of a resource processing
                     index = line.find("Starting to evaluate the resource")
                     if index != -1:
                         current_resId_left, current_resId_right = line.find('Info: ') + len("Info: "), index - 2
                         current_resId = line[current_resId_left:current_resId_right]
-                        if current_resId[0] == "/": current_resId = current_resId[1:]
-                        dash_index = current_resId.find('/')
-                        if dash_index!= -1 : current_resId = current_resId[:current_resId.find('/')] # only take main ressource id
+                        if current_resId[0] == "/": current_resId = current_resId[1:] # in the debug output the type of the resource may be precesseded by a / which need to be removed
+                        dash_index = current_resId.find('/') # check if futher dash exist
+                        if dash_index!= -1 : current_resId = current_resId[:current_resId.find('/')] # only take main ressource id not the rest
                         if current_resId not in resource_syscall_file: resource_syscall_file[current_resId] = {}
                         continue
                     continue
                 else:
-                    index = line.find("Evaluated in ")
+                    index = line.find("Evaluated in ") # at this point we are interpreting every line as being part of the processing of a resource, we check if the current line endicate the end of the processing of the current resource
                     if index != -1:
                         current_resId_left, current_resId_right = line.find('Info: ') + len("Info: "), index - 2
                         current_resId_end = line[current_resId_left:current_resId_right]
                         if current_resId_end[0] == "/": current_resId_end = current_resId_end[1:line.find("/")]
                         dash_index = current_resId_end.find('/')
                         if dash_index!= -1 : current_resId_end = current_resId_end[:current_resId_end.find('/')] # only take main ressource id
-                        assert current_resId_end == current_resId
+                        assert current_resId_end == current_resId # no resource are executed in parallel so to obtain/close a second resource the first one is first closed
                         current_resId = None
                         continue
 
@@ -96,10 +87,10 @@ class TraceHandling:
 
                 params_left, params_right = syscall_str.find('('), syscall_str.rfind('=') - 2
 
-                syscall_parent_prcess_id = line.strip()[:6]
-                syscall_name = syscall_str[:params_left]
-                str_params = syscall_str[params_left:params_right + 1]
-                syscall_ret = syscall_str[params_right + 2:]
+                syscall_timestamp = line.strip()[:6]
+                syscall_name = syscall_str[:params_left] # extract the name of the syscall
+                str_params = syscall_str[params_left:params_right + 1] # extract the parameters of the syscall
+                syscall_ret = syscall_str[params_right + 2:] # extract the return value of the syscall
 
                 # handle syscall pausing (unfinished)  start
                 unfinished_suffix = ' <unfinished ...>'
@@ -107,6 +98,7 @@ class TraceHandling:
                     buffer[syscall_name].append(syscall_str[:-len(unfinished_suffix)])
                     continue
 
+                # remove comments from the trace file
                 str_params = re.sub(r'/\* .*? \*/', '', str_params)
 
                 match syscall_name:
@@ -127,7 +119,7 @@ class TraceHandling:
                     case 'close':
                         right_fd = str_params.rfind(')')
                         fd_to_close = int(str_params[1:right_fd])
-                        if fd_to_close in FD_table: #TODO should we consider pointer we close without opening
+                        if fd_to_close in FD_table:
                             del FD_table[fd_to_close]
                     case 'lstat':
                         left_path = str_params.find(', ')
@@ -144,9 +136,22 @@ class TraceHandling:
                         else:
                             self.logger.info("Not implemented fcntl : %s" % (str(syscall_str)))
                     case 'getcwd':
-                        pass # we don't care TODO don't understand the argument
+                        pass
                     case 'chdir':
-                        pass #has this an influence on the path later TODO
+                        new_root_right = str_params.find(')')
+                        new_root = str_params[1:new_root_right]
+                        while True:
+                            if new_root[:2] == '../':
+                                new_root = new_root[2:]
+                                working_dir = working_dir[:-1]
+                                working_dir = working_dir[:working_dir[:-1].rfind('/')]
+                            elif new_root[:2] == './':
+                                new_root = new_root[1:]
+                                working_dir = working_dir[:-1]
+                                working_dir = working_dir[:working_dir[:-1].rfind('/')]
+                            else:
+                                break
+                        working_dir = working_dir + new_root + '/'
                     case "openat":
                         openat_param = str_params.split(',')
 
@@ -156,7 +161,7 @@ class TraceHandling:
                             resource_syscall_file[current_resId][openat_param[1][2:-1]].add("Not found")
                         else:
                             perms = []
-                            if 'O_RDONLY' in openat_param[2]: perms.append('R') #TODO implement the rest add a breakpoint for help
+                            if 'O_RDONLY' in openat_param[2]: perms.append('R')
                             #if 'O_' in openat_param[2]: perms.append('W')
                             #if 'O_RDONLY' in openat_param[2]: perms.append('X')
                             new_open_fd = int(syscall_ret[2:])
@@ -189,9 +194,9 @@ class TraceHandling:
                             path] = set()
                         resource_syscall_file[current_resId][path].add('remove')
                     case 'chmod':
-                        pass  #TOOD don't perhaps later for mutations
+                        pass
                     case 'fchmodat':
-                        pass  #TOOD don't perhaps later for mutations
+                        pass
                     case 'rename':
                         pass #TODO don't understand the argument
                         left_path2 = str_params.find(',')
@@ -313,27 +318,11 @@ class TraceHandling:
                             print(syscall_name, end='----Line from state that wasn t understood\n')
 
         for resId in resource_syscall_file:
+            # for each file we check if it was rename at one point by checking if it exist in file_correspondence, if it is the case we replce it with the renamed version else we keep it as is
             resource_syscall_file[resId] = {k if k not in file_correspondence.keys() else file_correspondence[k][1]: v for k, v in resource_syscall_file[resId].items()}
 
-        #return (trace_id, resource_syscall_file)
+        # we happen the result trace representation for both processing in the mutation generator and dependecies checker
         self.queue_basic_block_trace_for_mutation.put((trace_id, resource_syscall_file))
         self.queue_basic_block_trace_for_checker.put((trace_id, resource_syscall_file))
 
 
-#traceHandling = TraceHandling(None, None, None, None, None)
-#trace_basic = traceHandling.process_track((0, "output/java_2024-05-20_10-18-27/0", None))
-
-
-#search_dir = "output/java_2024-05-20_10-18-27/0"+"/"
-#with open(search_dir+"puppet_catalog.json") as json_file:
-#    json_file.readline()
-#    catalog_json = "java",json.load(json_file)
-    #print(catalog_json)
-#manifest = ManifestGraph(catalog_json)
-
-
-#traceAnalyzer = TraceAnalyzer(None, None, None, None, None)
-#traceAnalyzer.process_block_trace(manifest, trace_basic)
-
-#riskyMutationGeneration = RiskyMutationGeneration(None, Queue(), Queue(), None, None)
-#riskyMutationGeneration.process_block_trace(trace_basic)

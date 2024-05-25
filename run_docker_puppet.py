@@ -109,15 +109,16 @@ class SpawnRunPuppet:
             if self.oneRun:
                 break
 
+    '''
+    Given a list of mutation compute their linux terminal command equivalent then give it to the docker handler for processing, a new id is gennerated to track/uniquely identify the result though the pipeline 
+    '''
     def process_mutation(self, mutations: list):
-        #eg: ("rename", "path_file", "new_name")
-        #eg: ("edit_append", "path_file", "new_content")
-        #eg: ("edit_prepend", "path_file", "new_content")
-        #eg: ("replace", "path_file", "new_content")
-        #eg: ("delete", "path_file or dir", "new_name")
-        #eg: ("create_file", "path_dir", "new_name")
-        #eg: ("create_dir", "path_dir", "new_name")
-        #eg: ("rename", "path_file", "new_name")
+        #eg: ("rename", "path_file", "new_name") Current version
+        #eg: ("edit_append", "path_file", "new_content") Future version
+        #eg: ("edit_prepend", "path_file", "new_content") Future version
+        #eg: ("replace", "path_file", "new_content") Future version
+        #eg: ("delete", "path_file or dir", "new_name") Current version
+        #eg: ("create", "path"+"new_name") Current version
 
         mutations_commands = []
         mutations = mutations[1]
@@ -129,8 +130,6 @@ class SpawnRunPuppet:
                     mutations_commands.append("rm -rf "+mut[1])
                 case "create":
                     mutations_commands.append("touch "+mut[1])
-                case "edit_append":
-                    raise NotImplemented
                 case _:
                     raise NotImplemented
 
@@ -142,7 +141,19 @@ class SpawnRunPuppet:
         self.current_id += 1
 
 
-
+    '''
+    Given the list of command mutation to apply before the manifest, compute the required command and run them on the puppet_server image 
+    a. start fresh puppet_server image
+    b) The following command are prefixed by docker exec -i puppetserver to open a shell and execute them on the docker image itself
+    b. create the directory for the result
+    b. override default manifest with the one we wish to test
+    b. pull/install the module targeted by the testing
+    b. apply the mutation 
+    b. run the manifest with strace filtering a subset of syscall 
+    b. save the catalog
+    b. save the output of the tree command 
+    a. shutdown the puppet_server image
+    '''
     def run_puppet_manifest_from_name(self, mutations_commands, processing_id, mutations):
         local_output_dir = self.output_dir + str(processing_id) + "/"
         os.makedirs(os.path.join(os.getcwd(), local_output_dir))
@@ -171,15 +182,7 @@ class SpawnRunPuppet:
 
             commands.append("docker-compose down")
 
+            # execute all of the above command
             for command in commands:
                 print("SpawnRunPuppet: " + command)
                 subprocess.call(command, shell=True, stdout=output, stderr=output)
-
-
-
-
-
-#if __name__ == '__main__':
-    #spawn = SpawnRunPuppet(None, None, None, None, None)
-    #spawn.run_puppet_manifest_from_name("include java", "puppetlabs-java --version 11.0.0", 9)
-    #spawn.run_puppet_manifest("albatrossflavour-os_patching/init.pp", "albatrossflavour-os_patching-0.21.0", "output",8)
