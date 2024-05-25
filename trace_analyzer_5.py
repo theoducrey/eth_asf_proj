@@ -43,9 +43,7 @@ class TraceAnalyzer:
 
         #Directy log the result using the result logger
         # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
-        before_after = [['accessed', 'remove'], ['write', 'remove'], ['create', 'accessed'], ['create', 'rename'], ['create', 'write'], ['create', 'remove']] #fake one to cause problems
-        #before_after = [['accessed', 'remove']] # real dependencies
-        #TODO
+        before_after = [['accessed', 'remove'], ['write', 'remove'], ['create', 'accessed'], ['create', 'rename'], ['create', 'write'], ['create', 'remove']] # real dependencies
         # create -> open check
         relations = {}
         for relation in before_after:
