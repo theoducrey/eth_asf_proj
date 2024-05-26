@@ -14,3 +14,7 @@ For the second artefact for state inconsistencies uncomment lines 183, 184, 185 
 After the run output.txt will have, as shown in the report, in the second section a missing directory-file edge. 
 This edge is generated as a result of randomly adding a new file after the runs and the program detecting this inconsistency.
 This test shows that the program can detect inconsistencies between the states and will output them. The file that is gotten from this run is the same as "output_inconsistencies_test.txt".
+
+
+
+You may remove the content of the directory output/ and the file output.txt between run to save space, it will be automatically regenerated
