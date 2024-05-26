@@ -1,4 +1,0 @@
-In your manifest the no dependencies are missing
-
-Additionally your manifest caused inconsistencies with these edges to files in the directory graph: 
-edge from  for_testing  to  text_maybe.txt 
