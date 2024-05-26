@@ -7,7 +7,7 @@ def final_print():
     all_dependencies = []
     for i in dependencies:
         if "missing dependencies" in i:
-            j = i.split("state differences")[1][2:-2]
+            j = i.split("missing dependencies")[1][2:-2]
             while j[0] != ":":
                 j = j[1:]
             j = j[3:]
