@@ -1,0 +1,7 @@
+In your manifest the following dependencies are missing: 
+Package[java]  requires that  Stage[main]  happens first.
+Package[java]  requires that  Package[java-common]  happens first.
+Stage[main]  requires that  Package[java]  happens first.
+Package[java-common]  requires that  Package[java]  happens first.
+
+Additionally your manifest caused no inconsistencies with these edges to files in the directory graph
