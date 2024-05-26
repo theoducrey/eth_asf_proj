@@ -1,3 +1,0 @@
-version: 0.5.0
-modulepath: /home/fsmove/.puppet/etc/code/modules
-modulename: olivierHa-influxdb

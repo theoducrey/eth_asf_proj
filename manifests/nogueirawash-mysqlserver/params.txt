@@ -1,3 +1,0 @@
-version: latest
-modulepath: /home/fsmove/.puppet/etc/code/modules
-modulename: nogueirawash-mysqlserver

@@ -1,3 +1,0 @@
-FROM puppet/puppetserver
-
-# Optionally, you can configure Puppet agent settings here.

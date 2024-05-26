@@ -1,3 +1,0 @@
-class { 'zookeeper':
-  realm =>  "production"
-}

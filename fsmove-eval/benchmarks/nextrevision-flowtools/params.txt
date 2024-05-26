@@ -1,3 +1,0 @@
-version: 0.0.5
-modulepath: /home/fsmove/.puppet/etc/code/modules
-modulename: nextrevision-flowtools
