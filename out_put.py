@@ -7,7 +7,10 @@ def final_print():
     all_dependencies = []
     for i in dependencies:
         if "missing dependencies" in i:
-            j = i.split("missing dependencies")[1][5:-2]
+            j = i.split("state differences")[1][2:-2]
+            while j[0] != ":":
+                j = j[1:]
+            j = j[3:]
             j = j.split(", ")
             for k in range(len(j)//2):
                 temp = j[k*2][2:-1] + " .-. " + j[k*2+1][1:-2]
