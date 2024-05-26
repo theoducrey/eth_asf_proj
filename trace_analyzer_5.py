@@ -45,6 +45,8 @@ class TraceAnalyzer:
         #Directy log the result using the result logger
         # list of tuples(lists), these tuples contain pair where the first has to have happened before the second
         before_after = [['accessed', 'remove'], ['write', 'remove'], ['create', 'accessed'], ['create', 'rename'], ['create', 'write'], ['create', 'remove']] # real dependencies
+        #uncomment for test
+        #before_after = [['accessed', 'accessed'], ['accessed', 'remove'], ['write', 'remove'], ['create', 'accessed'], ['create', 'rename'], ['create', 'write'], ['create', 'remove']] # real dependencies with fake dependency
         relations = {}
         # checks if each realation in the list "before_after" is fulfilled for each location
         # that means if one resource creates a file and another resource opens that file, the resource that creates should have happened before
