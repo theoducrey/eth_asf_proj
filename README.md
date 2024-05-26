@@ -1,4 +1,4 @@
-Requirement : docker installed and callable using the docker-compose up command 
+Requirement : docker installed and callable using the docker-compose up command , and numpy installed 
 
 To get more information about the pipeline and how to run it we invite you to read the implementation setup of the project report availible as a pdf on the git : 
 
