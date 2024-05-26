@@ -72,13 +72,13 @@ class StateChecker:
             filetypes[i] = 0
         for i in directory:
             queue.append(i[-1][1:-1])
-            if no_save == False and (queue[-1] == "puppetlabs" or queue[-1] == "puppetserver" or queue[-1] == "available_manifests" or queue[-1] == "modules" or queue[-1] == "output" or queue[-1] == "puppetserver_conf"): # puppetserver directory will have changing names each run since that is how puppet works and there are mounted directories which are local so can change
-                no_save = True
-                where_is = len(queue)-1
             if (len(i[0])-1)//4+1 <= curr_count:
                 for j in range(curr_count-(len(i[0])-1)//4):
                     queue.pop(len(queue)-2)
-            if len(queue) <= where_is:
+            if (no_save == False or len(queue) <= where_is) and (queue[-1] == "puppetlabs" or queue[-1] == "puppetserver" or queue[-1] == "available_manifests" or queue[-1] == "modules" or queue[-1] == "output" or queue[-1] == "puppetserver_conf"): # puppetserver directory will have changing names each run since that is how puppet works and there are mounted directories which are local so can change
+                no_save = True
+                where_is = len(queue)
+            elif len(queue) <= where_is:
                 no_save = False
             if " -> " not in queue[-1] and "." in queue[-1] and no_save == False and queue[-2][:5] != "jruby": # to only keep files as endpoints, jruby will have some changing numbers in names, because of puppet
                 q2 = queue[-1].split(".")[-1]
