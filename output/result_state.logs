@@ -1,2 +1,0 @@
-2024-05-26 20:33:14,939 INFO state differences 0: []
-2024-05-26 20:33:51,134 INFO state differences 1: [[['1', 'state.txt'], ['1', 'strace_output.txt'], ['1', 'terminal.log']]]

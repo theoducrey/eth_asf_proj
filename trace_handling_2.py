@@ -132,9 +132,11 @@ class TraceHandling:
                         if mode == 'F_GETFL' or mode == 'F_GETFD':
                             pass
                         elif mode == "FD_CLOEXEC":
-                            self.logger.info(str(syscall_str))
+                            pass
+                            #self.logger.info(str(syscall_str))
                         else:
-                            self.logger.info("Not implemented fcntl : %s" % (str(syscall_str)))
+                            pass
+                            #self.logger.info("Not implemented fcntl : %s" % (str(syscall_str)))
                     case 'getcwd':
                         pass
                     case 'chdir':
@@ -174,7 +176,8 @@ class TraceHandling:
                         link_path = working_dir+str_params.split(',')[0][2:-1]
                         target_path = working_dir+str_params.split(',')[0][2:-1]
                         if link_path in file_correspondence:
-                            self.logger.info("overriding symbolic link probably shoudn't be done")
+                            pass
+                            #self.logger.info("overriding symbolic link probably shoudn't be done")
                         file_correspondence[link_path] =('link', target_path)
                     case 'chown':
                         pass #TOOD don't perhaps later for mutations
@@ -182,7 +185,7 @@ class TraceHandling:
                         left_fd2 = str_params.find(',')
                         fd = int(str_params[1:left_fd2])
                         if fd not in FD_table:
-                            self.logger.info("BIG BuG TO FIx close before write why ????? %s" % (str(syscall_str)))
+                            #self.logger.info("close before write ignored %s" % (str(syscall_str)))
                             continue
                         path = FD_table[fd][0]
                         if path not in resource_syscall_file[current_resId]: resource_syscall_file[current_resId][path] = set()
@@ -231,7 +234,7 @@ class TraceHandling:
                         fd1 = int(str_params[1:left_fd2])
                         fd2 = int(str_params[left_fd2+1:right_fd2])
                         if fd2 not in FD_table:
-                            self.logger.info("Potential big error in dup2 : %s" % (str(syscall_str)))
+                            #self.logger.info(" dup2 ignored missing filedescriptor: %s" % (str(syscall_str)))
                             continue
                         FD_table[fd1] = FD_table[fd2]
                     case 'dup':
@@ -239,7 +242,7 @@ class TraceHandling:
                         old_fd = int(str_params[1:right_old_fd])
                         new_fd = int(syscall_ret[2:])
                         if old_fd not in FD_table:
-                            self.logger.info("Potential big error in dup2 : %s" % (str(syscall_str)))
+                            #self.logger.info("dup ignored missing filedescriptor : %s" % (str(syscall_str)))
                             continue
                         FD_table[new_fd] = FD_table[old_fd]
                     case 'clone':
@@ -289,7 +292,7 @@ class TraceHandling:
                         try:
                             new_root = FD_table[int(str_params[str_params.find('(')+1:str_params.find(')')])][0]
                         except KeyError as e:
-                            self.logger.info("Trying to change working directory to a file pointer not open or already closed .")
+                            #self.logger.info("Trying to change working directory to a file pointer not open or already closed .")
                             continue
                         while True:
                             if new_root[:2]=='../':

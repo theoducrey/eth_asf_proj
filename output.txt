@@ -1,6 +1,3 @@
 In your manifest the no dependencies are missing
 
-Additionally your manifest caused inconsistencies with these edges to files in the directory graph: 
-edge from  1  to  state.txt 
-edge from  1  to  strace_output.txt 
-edge from  1  to  terminal.log 
+Additionally your manifest caused no inconsistencies with these edges to files in the directory graph
