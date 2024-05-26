@@ -2,7 +2,7 @@ def final_print():
     # this first part is responsible for outputting all dependencies that were missing from the manifest.
     with open("output/result_dependencies.logs", "r") as f:
         dependencies = f.readlines()
-        
+
     # this part is for collecting all the missing dependencies found throughout all runs
     all_dependencies = []
     for i in dependencies:
@@ -27,7 +27,6 @@ def final_print():
     # the second part is responsible for displaying the state inconsistencies that happened between the states after running the manifest
     with open("output/result_state.logs", "r") as g:
         state_reconciliation = g.readlines()
-
     # this part is for collecting all the inconsistencies found throughout all runs
     all_inconsistencies = []
     for i in state_reconciliation:
@@ -37,14 +36,14 @@ def final_print():
                 j = j[1:]
             j = j[3:]
             j = j.split(", ")
-            for k in range(len(j)//2):
+            for k in range(len(j)//2): # splits directory and file
                 t1 = j[k*2][2:-1]
                 t2 = j[k*2+1][1:-2]
-                if t1[0] == "'":
-                    t1 = t1[1:]
-                if t2[-1] == "'":
-                    t2 = t2[:-1]
-                if t1 != "puppetserver" and t1[:5] != "jruby": #these two directories change each run, because that is required for each puppet run so we ignore the changes there
+                if len(t1) > 0 and len(t2) > 0:
+                    if t1[0] == "'":
+                        t1 = t1[1:]
+                    if t2[-1] == "'":
+                        t2 = t2[:-1]
                     temp = t1 + " .-. " + t2
                     if temp not in all_inconsistencies:
                         all_inconsistencies.append(temp)
@@ -62,5 +61,3 @@ def final_print():
     # this part saves the output to a file to be viewed.
     with open("output.txt", "w") as f:
         f.write(string_to_print)
-
-
