@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import random
 from datetime import datetime
 from sys import stdout
 
@@ -178,6 +179,11 @@ class SpawnRunPuppet:
                          )))  #puppet apply /etc/puppetlabs/code/environments/production/manifests/init.pp --debug --evaltrace
             commands.append(command_docker_shell + "bash -c \"puppet catalog find > /"+local_output_dir + "/puppet_catalog.json\"")
 
+            # uncomment for test
+            #if random.randint(1,10) <= 5 and processing_id != 0:
+            #    commands.append(command_docker_shell + "mkdir for_testing")
+            #    commands.append(command_docker_shell + "touch for_testing/text_maybe.txt")
+            
             commands.append(command_docker_shell + "bash -c \"tree > /"+local_output_dir + "/state.txt\"")
 
             commands.append("docker-compose down")
